@@ -1,12 +1,14 @@
 [
   {
-    "name": "周杰伦 - 三年二班",
-    "mp3": "songs/周杰伦 - 三年二班.mp3",
-    "json": "songs/周杰伦 - 三年二班.json"
+    "title": "三年二班",
+    "artist": "周杰伦",
+    "src": "s1.mp3",
+    "lyric": "s1.json"
   },
   {
-    "name": "周杰伦、费玉清 - 千里之外",
-    "mp3": "songs/周杰伦、费玉清 - 千里之外.mp3",
-    "json": "songs/周杰伦、费玉清 - 千里之外.json"
+    "title": "千里之外",
+    "artist": "周杰伦、费玉清",
+    "src": "s2.mp3",
+    "lyric": "s2.json"
   }
 ]
