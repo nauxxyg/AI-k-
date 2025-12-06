@@ -494,46 +494,63 @@
         };
 
         // --- 主循环 ---
-        function loop() {
-            if (!isRunning) return;
-            requestAnimationFrame(loop);
+        // ... (之前的代码保持不变，直到 loop 函数)
 
-            frameCounter++;
-            const currentTime = bgmAudio.currentTime;
+        // --- 主循环 ---
+        function loop() {
+            if (!isRunning) return;
+            requestAnimationFrame(loop);
 
-            let targetPitch = 0;
-            for(let i = renderIndex; i < currentMelodyData.length; i++) {
-                const item = currentMelodyData[i];
-                if (Math.abs(item.t - currentTime) < 0.15) { 
-                    targetPitch = item.p;
-                    break;
-                }
-                if (item.t > currentTime + 0.15) break; 
-            }
+            frameCounter++;
+            const currentTime = bgmAudio.currentTime;
 
-            let userFreq = lastUserFreq;
-            if (frameCounter % 3 === 0) {
-                analyser.getFloatTimeDomainData(dataArray);
-                const detected = getPitchAMDF(dataArray, audioCtx.sampleRate);
-                
-                if (detected > 0) {
-                    userFreq = detected;
-                    lastUserFreq = detected;
-                } else {
-                    if (frameCounter % 10 === 0) lastUserFreq = -1; 
-                }
+            let targetPitch = 0;
+            for(let i = renderIndex; i < currentMelodyData.length; i++) {
+                const item = currentMelodyData[i];
+                if (Math.abs(item.t - currentTime) < 0.15) { 
+                    targetPitch = item.p;
+                    break;
+                }
+                if (item.t > currentTime + 0.15) break; 
+            }
 
-                if (targetPitch > 0) {
-                    totalVocalFrames++; 
-                    if (userFreq > 0 && checkPitchHit(userFreq, targetPitch)) {
-                        hitVocalFrames++;
-                    }
-                    if (totalVocalFrames > 0) {
-                        score = Math.floor((hitVocalFrames / totalVocalFrames) * 100);
-                        scoreEl.innerText = score;
-                    }
-                }
-            }
+            let userFreq = lastUserFreq;
+            if (frameCounter % 3 === 0) {
+                analyser.getFloatTimeDomainData(dataArray);
+                const detected = getPitchAMDF(dataArray, audioCtx.sampleRate);
+                
+                if (detected > 0) {
+                    userFreq = detected;
+                    lastUserFreq = detected;
+                } else {
+                    if (frameCounter % 10 === 0) lastUserFreq = -1; 
+                }
+
+                if (targetPitch > 0) {
+                    totalVocalFrames++; 
+                    if (userFreq > 0 && checkPitchHit(userFreq, targetPitch)) {
+                        hitVocalFrames++;
+                    }
+                    
+                    if (totalVocalFrames > 0) {
+                        // 原始分数计算: 命中帧数 / 总人声帧数 * 100
+                        let rawScore = (hitVocalFrames / totalVocalFrames) * 100;
+                        
+                        // *** 评分机制优化 ***
+                        // 目标是让最低分显示 80 分。我们可以将 0-100 的原始分数映射到 80-100 的范围。
+                        // 新分数 = 80 + (原始分数 * 0.2)
+                        score = Math.floor(80 + (rawScore * 0.2)); 
+                        
+                        // 确保最终分数不会超过 100
+                        score = Math.min(100, score); 
+                        
+                        // 实时显示当前分数
+                        scoreEl.innerText = score;
+                    }
+                }
+            }
+
+        // ... (之后的代码保持不变)
 
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, canvasWidth, canvasHeight);
