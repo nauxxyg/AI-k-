@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Web K歌 - 手机专业版</title>
+    <title>Web K歌 - 终极专业版</title>
     <style>
-        /* --- 全局样式重置 --- */
+        /* =========================================
+           1. 全局样式重置 (Global Reset)
+           ========================================= */
         * { 
             box-sizing: border-box; 
             -webkit-tap-highlight-color: transparent; /* 去除点击高亮 */
@@ -15,7 +17,7 @@
         body { 
             background: #111; 
             color: #eee; 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             height: 100dvh; /* 动态视口高度，解决Safari地址栏遮挡 */
             width: 100vw;
             margin: 0; 
@@ -25,7 +27,9 @@
             user-select: none; /* 禁止长按选中文字 */
         }
 
-        /* --- 1. 顶部栏 (Header) --- */
+        /* =========================================
+           2. 顶部栏 (Header)
+           ========================================= */
         .top-bar {
             flex-shrink: 0; 
             background: #1a1a1a;
@@ -37,21 +41,30 @@
             padding: 0 15px;
             border-bottom: 1px solid #333;
             z-index: 20;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
         }
 
+        /* 歌曲选择下拉框 */
         select {
             background: #333;
             color: #fff;
             border: 1px solid #555;
             border-radius: 20px;
-            padding: 6px 15px;
+            padding: 6px 25px 6px 15px; /* 右侧留空给箭头 */
             font-size: 14px;
-            max-width: 60%; 
+            max-width: 65%; 
             outline: none;
-            appearance: none; /* 去除默认下拉箭头 */
-            text-align: center;
+            appearance: none; /* 去除默认丑陋的箭头 */
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            /* 自定义一个小箭头 */
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px top 50%;
+            background-size: 8px auto;
         }
 
+        /* 状态标签 */
         .status-badge {
             font-size: 12px;
             color: #00ffcc;
@@ -59,16 +72,18 @@
             padding: 4px 10px;
             border-radius: 10px;
             border: 1px solid rgba(0, 255, 204, 0.2);
+            white-space: nowrap;
         }
 
-        /* --- 2. 游戏画布 (Main) --- */
+        /* =========================================
+           3. 游戏画布区域 (Main Canvas)
+           ========================================= */
         #canvas-wrapper {
             flex: 1; /* 自动撑满剩余高度 */
             position: relative;
             width: 100%;
             background: #000;
             overflow: hidden;
-            /* 居中 loading 提示 */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -92,21 +107,24 @@
             z-index: 10;
         }
         .score-value { 
-            font-size: 42px; 
+            font-size: 48px; 
             color: #00ffcc; 
             font-weight: 800; 
             font-family: 'Helvetica Neue', Arial, sans-serif; 
-            text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+            text-shadow: 0 0 15px rgba(0, 255, 204, 0.6);
+            transition: transform 0.1s;
         }
-        .score-label { font-size: 12px; color: #888; letter-spacing: 1px; }
+        .score-label { font-size: 12px; color: #888; letter-spacing: 2px; text-transform: uppercase; }
 
-        /* --- 3. 底部控制栏 (Footer) --- */
+        /* =========================================
+           4. 底部控制栏 (Footer Controls)
+           ========================================= */
         .bottom-controls {
             flex-shrink: 0; 
             background: #1a1a1a;
             width: 100%;
+            /* 适配 iPhone 底部安全区，防止横条遮挡 */
             padding: 12px 20px;
-            /* 适配 iPhone 底部安全区 */
             padding-bottom: max(12px, env(safe-area-inset-bottom));
             
             display: flex;
@@ -114,75 +132,112 @@
             align-items: center;
             border-top: 1px solid #333;
             gap: 15px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
         }
 
-        /* 音量条容器 */
+        /* 音量控制组 (纵向排列) */
         .vol-control {
             flex: 1;
             display: flex;
-            align-items: center;
-            gap: 10px;
+            flex-direction: column;
+            justify-content: center;
+            gap: 6px;
             background: #252525;
-            padding: 0 15px;
-            height: 44px;
-            border-radius: 22px;
+            padding: 8px 15px;
+            height: 54px;
+            border-radius: 12px;
+            border: 1px solid #333;
         }
-        .vol-label { font-size: 12px; color: #aaa; white-space: nowrap; }
+        
+        .vol-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #aaa;
+            width: 100%;
+        }
+        .vol-num { color: #00ffcc; font-weight: bold; font-family: monospace; }
+
+        /* 滑块美化 */
         input[type=range] {
-            flex: 1;
+            width: 100%;
             height: 4px;
             border-radius: 2px;
-            accent-color: #00ffcc; /* 安卓/新版Chrome变色 */
+            appearance: none;
+            background: #444;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #00ffcc;
             cursor: pointer;
+            box-shadow: 0 0 5px rgba(0, 255, 204, 0.5);
         }
 
         /* 开始按钮 */
         .btn-main {
             min-width: 100px;
-            height: 44px;
+            height: 54px;
             padding: 0 20px;
             background: linear-gradient(135deg, #00ffcc, #0099ff);
             color: #000;
             border: none;
-            border-radius: 22px;
+            border-radius: 12px; /* 方圆角，更现代 */
             font-size: 16px;
             font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0, 255, 204, 0.3);
-            transition: transform 0.1s;
+            box-shadow: 0 4px 15px rgba(0, 255, 204, 0.2);
+            transition: transform 0.1s, filter 0.1s;
         }
-        .btn-main:active { transform: scale(0.92); filter: brightness(0.9); }
+        .btn-main:active { transform: scale(0.95); filter: brightness(0.9); }
         .btn-main:disabled { 
             background: #333; 
             color: #666; 
             box-shadow: none; 
             transform: none;
+            cursor: not-allowed;
         }
 
-        /* --- 横屏提示层 --- */
+        /* =========================================
+           5. 横屏提示遮罩 (Rotate Hint)
+           ========================================= */
         #rotate-hint {
-            display: none; /* 默认隐藏 */
+            display: none; /* JS控制或CSS媒体查询控制 */
             position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.92);
             z-index: 999;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             color: white;
             text-align: center;
+            padding: 20px;
         }
-        #rotate-hint span { font-size: 40px; margin-bottom: 20px; display: block; }
+        .rotate-icon { font-size: 50px; margin-bottom: 20px; animation: rotate Anim 2s infinite; }
+        .rotate-text { font-size: 18px; color: #ccc; }
+        
+        @keyframes rotateAnim {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(-90deg); }
+            100% { transform: rotate(-90deg); }
+        }
 
-        /* 当屏幕很窄时（竖屏），建议横屏 */
-        @media screen and (max-width: 500px) {
-            /* 可以在这里把 #rotate-hint 设为 flex 来强制横屏，
-               但为了不打扰用户，我们只调整UI大小 */
-            .score-value { font-size: 32px; }
+        /* 媒体查询：仅在手机竖屏时显示遮罩 */
+        @media screen and (orientation: portrait) and (max-width: 600px) {
+            #rotate-hint { display: flex; }
         }
 
         #bgmAudio { display: none; }
     </style>
 </head>
 <body>
+
+    <div id="rotate-hint">
+        <div class="rotate-icon">📱</div>
+        <div class="rotate-text">请将手机<b>横屏</b>使用<br>以获得最佳 K 歌体验</div>
+    </div>
 
     <div class="top-bar">
         <select id="songSelect">
@@ -201,8 +256,11 @@
 
     <div class="bottom-controls">
         <div class="vol-control">
-            <span class="vol-label">🎤 伴奏音量</span>
-            <input type="range" id="volSlider" min="0" max="1" step="0.05" value="0.7">
+            <div class="vol-header">
+                <span>🎤 伴奏音量</span>
+                <span class="vol-num" id="volText">70%</span>
+            </div>
+            <input type="range" id="volSlider" min="0" max="100" step="1" value="70">
         </div>
         <button id="startBtn" class="btn-main" disabled>请选歌</button>
     </div>
@@ -211,59 +269,69 @@
 
     <script>
         // ==========================================
-        //  Web K歌核心引擎 - Mobile Professional
+        //  Web K歌核心引擎 - Ultimate Edition
         // ==========================================
 
-        // --- 全局状态 ---
+        // --- 全局变量 ---
         let playlist = [];
         let currentMelodyData = [];
         let audioCtx, analyser, micSource, bgmSourceNode, bgmGainNode;
         let dataArray;
         let isRunning = false;
         
-        // --- 评分相关 ---
+        // --- 评分逻辑变量 ---
         let score = 0;
-        let totalVocalFrames = 0; // 原唱有声总帧数
-        let hitVocalFrames = 0;   // 击中帧数
+        let totalVocalFrames = 0; // 分母
+        let hitVocalFrames = 0;   // 分子
         
-        // --- 渲染循环相关 ---
+        // --- 渲染循环变量 ---
         let frameCounter = 0;
         let renderIndex = 0;
         let lastUserFreq = -1;
         
-        // --- DOM 元素引用 ---
+        // --- DOM 引用 ---
         const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d', { alpha: false }); // 关闭透明层加速渲染
+        const ctx = canvas.getContext('2d', { alpha: false }); // 优化性能
         const songSelect = document.getElementById('songSelect');
         const startBtn = document.getElementById('startBtn');
         const statusText = document.getElementById('statusText');
         const scoreEl = document.getElementById('scoreEl');
+        
+        // 音量控件
         const volSlider = document.getElementById('volSlider');
+        const volText = document.getElementById('volText');
+        
         const bgmAudio = document.getElementById('bgmAudio');
 
         // --- 视口配置 ---
         let canvasWidth, canvasHeight;
-        const VIEW_DURATION = 4.0; // 屏幕显示4秒内容，适合手机
-        const NOTE_HEIGHT = 10;    // 音符加粗，方便看清
+        const VIEW_DURATION = 4.0; // 视野秒数
+        const NOTE_HEIGHT = 12;    // 音符高度(加粗)
 
         // ============================
-        // 1. 初始化与事件绑定
+        // 1. 初始化 (Setup)
         // ============================
         window.onload = async () => {
             resizeCanvas();
             window.addEventListener('resize', resizeCanvas);
             
-            // 音量实时调节
+            // --- 音量调节逻辑 (100级) ---
             volSlider.oninput = () => {
-                if(bgmGainNode) bgmGainNode.gain.value = volSlider.value;
+                const val = parseInt(volSlider.value);
+                volText.innerText = val + "%"; // 更新UI
+                if(bgmGainNode) {
+                    // 转换为 Web Audio API 需要的 0.0 - 1.0
+                    bgmGainNode.gain.value = val / 100;
+                }
             };
 
-            // 加载歌单列表
+            // --- 加载歌单 ---
             try {
+                // 加时间戳防止缓存
                 const res = await fetch('playlist.json?t=' + Date.now());
                 playlist = await res.json();
                 
-                songSelect.innerHTML = '<option value="" disabled selected>👉 请点击选择歌曲</option>';
+                songSelect.innerHTML = '<option value="" disabled selected>👉 点击选择歌曲</option>';
                 playlist.forEach((song, index) => {
                     const opt = document.createElement('option');
                     opt.value = index;
@@ -277,19 +345,19 @@
                 console.error(e);
                 statusText.innerText = "列表加载失败";
                 statusText.style.color = "#ff3366";
-                alert("无法读取 playlist.json，请确保文件存在。");
+                alert("无法读取 playlist.json，请检查文件是否上传。");
             }
 
-            // 监听播放结束
+            // --- 播放结束逻辑 ---
             bgmAudio.addEventListener('ended', () => {
                 isRunning = false;
                 startBtn.disabled = false;
                 startBtn.innerText = "再来一局";
-                alert(`演唱结束！你的得分是: ${score}`);
+                alert(`演唱结束！最终得分: ${score}`);
             });
         };
 
-        // 适配高清屏幕 (Retina Display)
+        // Canvas 高清适配 (Retina)
         function resizeCanvas() {
             const wrapper = document.getElementById('canvas-wrapper');
             canvasWidth = wrapper.clientWidth;
@@ -299,12 +367,12 @@
             canvas.width = canvasWidth * dpr;
             canvas.height = canvasHeight * dpr;
             
-            ctx.resetTransform(); // 重置矩阵
-            ctx.scale(dpr, dpr);  // 缩放绘图上下文
+            ctx.resetTransform(); 
+            ctx.scale(dpr, dpr);  
         }
 
         // ============================
-        // 2. 加载歌曲数据
+        // 2. 数据加载 (Data Loading)
         // ============================
         async function loadSongData() {
             const index = songSelect.value;
@@ -312,7 +380,7 @@
             if (!song) return;
 
             stopGame();
-            statusText.innerText = "下载数据中...";
+            statusText.innerText = "下载数据...";
             startBtn.disabled = true;
 
             try {
@@ -320,7 +388,7 @@
                 const res = await fetch(song.json);
                 currentMelodyData = await res.json();
                 
-                // 重置所有状态
+                // 重置状态
                 renderIndex = 0;
                 score = 0;
                 totalVocalFrames = 0;
@@ -329,11 +397,11 @@
                 
                 statusText.innerText = "加载完毕";
                 startBtn.disabled = false;
-                startBtn.innerText = "▶ 开始";
+                startBtn.innerText = "▶ 开始演唱";
             } catch (e) {
                 console.error(e);
                 statusText.innerText = "数据错误";
-                alert("无法加载歌曲数据 (JSON/MP3 404)");
+                alert("加载歌曲数据失败 (404 Not Found)");
             }
         }
 
@@ -344,21 +412,21 @@
         }
 
         // ============================
-        // 3. 启动游戏 (处理音频权限)
+        // 3. 游戏启动 (Start)
         // ============================
         startBtn.onclick = async () => {
-            // 初始化 AudioContext (必须在点击事件中触发)
+            // 初始化 AudioContext
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if (audioCtx.state === 'suspended') await audioCtx.resume();
 
-            // 获取麦克风流
+            // 麦克风处理 (抗噪配置)
             if (!micSource) {
                 try {
-                    statusText.innerText = "请求麦克风...";
+                    statusText.innerText = "请求权限...";
                     const stream = await navigator.mediaDevices.getUserMedia({ 
                         audio: { 
-                            echoCancellation: true, // 回声消除
-                            autoGainControl: false, // 禁止自动增益(防止噪音放大)
+                            echoCancellation: true, 
+                            autoGainControl: false, // 关键：关闭自动增益以减少背景噪音
                             noiseSuppression: false, 
                             latency: 0 
                         } 
@@ -369,22 +437,26 @@
                     micSource.connect(analyser);
                     dataArray = new Float32Array(analyser.fftSize);
                 } catch (e) {
-                    alert("无法获取麦克风权限，无法评分！");
+                    alert("无法获取麦克风权限！\n(请确保使用了 HTTPS 或本地 localhost)");
                     statusText.innerText = "无权限";
                     return;
                 }
             }
 
-            // 连接伴奏
+            // 伴奏连接与音量初始化
             if (!bgmSourceNode) {
                 bgmSourceNode = audioCtx.createMediaElementSource(bgmAudio);
                 bgmGainNode = audioCtx.createGain();
-                bgmGainNode.gain.value = volSlider.value;
+                // 使用当前的 slider 值初始化音量
+                bgmGainNode.gain.value = parseInt(volSlider.value) / 100;
+                
                 bgmSourceNode.connect(bgmGainNode);
                 bgmGainNode.connect(audioCtx.destination);
+            } else {
+                // 如果是重玩，也要确保音量正确
+                bgmGainNode.gain.value = parseInt(volSlider.value) / 100;
             }
 
-            // 播放
             try {
                 await bgmAudio.play();
                 isRunning = true;
@@ -392,12 +464,12 @@
                 startBtn.innerText = "演唱中...";
                 loop();
             } catch (e) {
-                alert("播放失败，请重试");
+                alert("播放失败，请点击屏幕重试");
             }
         };
 
         // ============================
-        // 4. 游戏主循环 (Render Loop)
+        // 4. 游戏循环 (Main Loop)
         // ============================
         function loop() {
             if (!isRunning) return;
@@ -406,21 +478,20 @@
             frameCounter++;
             const currentTime = bgmAudio.currentTime;
 
-            // --- A. 查找当前时刻的目标音高 ---
+            // --- A. 查找目标音高 (Target Pitch) ---
             let targetPitch = 0;
-            // 简单的搜索优化：从上次渲染的位置附近开始找
             for(let i = renderIndex; i < currentMelodyData.length; i++) {
                 const item = currentMelodyData[i];
                 if (Math.abs(item.t - currentTime) < 0.15) { 
                     targetPitch = item.p;
                     break;
                 }
-                // 如果数据已经超过当前时间太远，就不用找了
                 if (item.t > currentTime + 0.15) break; 
             }
 
-            // --- B. 麦克风音高检测 (每3帧算一次，省电) ---
+            // --- B. 麦克风音高检测 (Microphone Pitch) ---
             let userFreq = lastUserFreq;
+            // 降频检测：每3帧算一次，省电
             if (frameCounter % 3 === 0) {
                 analyser.getFloatTimeDomainData(dataArray);
                 const detected = getPitchAMDF(dataArray, audioCtx.sampleRate);
@@ -429,31 +500,31 @@
                     userFreq = detected;
                     lastUserFreq = detected;
                 } else {
-                    // 声音衰减处理：10帧没声音才归零，避免闪烁
+                    // 声音衰减防抖
                     if (frameCounter % 10 === 0) lastUserFreq = -1; 
                 }
 
-                // --- 评分逻辑 ---
+                // --- 评分逻辑 (Scoring) ---
                 if (targetPitch > 0) {
                     totalVocalFrames++; 
                     if (userFreq > 0 && checkPitchHit(userFreq, targetPitch)) {
                         hitVocalFrames++;
                     }
                     if (totalVocalFrames > 0) {
-                        // 实时计算百分比
+                        // 实时计算分数
                         score = Math.floor((hitVocalFrames / totalVocalFrames) * 100);
                         scoreEl.innerText = score;
                     }
                 }
             }
 
-            // --- C. 绘制 ---
+            // --- C. 绘图 (Rendering) ---
             
             // 1. 清空背景
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-            // 2. 绘制五线谱参考线
+            // 2. 绘制参考线 (Reference Lines)
             ctx.strokeStyle = '#222';
             ctx.lineWidth = 1;
             ctx.beginPath();
@@ -463,47 +534,43 @@
             });
             ctx.stroke();
 
-            // 3. 绘制判定线 (固定在左侧 25% 处)
+            // 3. 绘制判定线 (Playhead) - 位于屏幕左侧 25%
             const playerX = canvasWidth * 0.25;
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
             ctx.lineWidth = 2;
             ctx.beginPath(); ctx.moveTo(playerX, 0); ctx.lineTo(playerX, canvasHeight); ctx.stroke();
 
-            // 4. 绘制音符 (滚动逻辑)
-            // 游标修正：如果进度被拖拽，重置游标
+            // 4. 绘制音符 (Notes)
+            // 游标逻辑：跳过已过期的音符
             if (renderIndex >= currentMelodyData.length || currentMelodyData[renderIndex].t > currentTime + 10) renderIndex = 0;
-            // 快速跳过过期音符
             while (renderIndex < currentMelodyData.length - 1 && currentMelodyData[renderIndex].t < currentTime - 1) renderIndex++;
 
             for (let i = renderIndex; i < currentMelodyData.length; i++) {
                 const note = currentMelodyData[i];
-                // 超出屏幕右侧则停止绘制
-                if (note.t > currentTime + VIEW_DURATION) break;
+                if (note.t > currentTime + VIEW_DURATION) break; // 超出屏幕右侧不画
 
-                // 计算 X 轴坐标 (核心滚动公式)
-                // playerX 是当前时间点，(note.t - currentTime) 是时间差
+                // 计算 X 轴：基于时间差的滚动逻辑
                 const drawX = playerX + (note.t - currentTime) / VIEW_DURATION * canvasWidth;
 
-                // 屏幕左侧外的不用画
-                if (note.p <= 0 || drawX < -20) continue; 
+                // 超出屏幕左侧或无效音高不画
+                if (note.p <= 0 || drawX < -30) continue; 
                 
                 const y = freqToY(note.p);
-                let color = '#00eebb'; // 默认青色
+                let color = '#00eebb'; // 默认颜色
 
-                // 视觉判定：当音符经过判定线附近
+                // 视觉判定反馈
                 if (Math.abs(drawX - playerX) < 15) { 
-                     // 如果此时唱对了，变白
                      if (userFreq > 0 && targetPitch > 0 && checkPitchHit(userFreq, targetPitch)) {
-                         color = '#ffffff'; 
+                         color = '#ffffff'; // 击中变白
                      }
                 }
                 
                 ctx.fillStyle = color;
-                // 手动绘制圆角矩形 (兼容旧手机)
-                drawRoundRect(ctx, drawX, y - NOTE_HEIGHT/2, 12, NOTE_HEIGHT, 4);
+                // 使用兼容性函数绘制圆角矩形
+                drawRoundRect(ctx, drawX, y - NOTE_HEIGHT/2, 14, NOTE_HEIGHT, 5);
             }
 
-            // 5. 绘制玩家光标
+            // 5. 绘制玩家光标 (Cursor)
             if (userFreq > 0) {
                 const userY = freqToY(userFreq);
                 ctx.beginPath();
@@ -514,7 +581,7 @@
                     ctx.shadowBlur = 15;
                     ctx.shadowColor = '#00ffcc';
                 } else {
-                    ctx.fillStyle = '#ff3366'; // 跑调红
+                    ctx.fillStyle = '#ff3366'; // 跑调红色
                     ctx.shadowBlur = 0;
                 }
                 ctx.fill();
@@ -523,10 +590,10 @@
         }
 
         // ============================
-        // 5. 辅助算法与函数
+        // 5. 辅助函数 (Utils)
         // ============================
 
-        // 兼容性圆角矩形绘制
+        // 手动绘制圆角矩形 (兼容旧版本 iOS/Android WebView)
         function drawRoundRect(ctx, x, y, width, height, radius) {
             ctx.beginPath();
             ctx.moveTo(x + radius, y);
@@ -542,7 +609,7 @@
             ctx.fill();
         }
 
-        // 频率转 Y 坐标 (对数映射)
+        // 频率 -> Y轴坐标 (对数映射)
         function freqToY(freq) {
             const minF = 65, maxF = 1000;
             if (freq < minF) freq = minF;
@@ -551,36 +618,38 @@
             return canvasHeight - (percent * canvasHeight);
         }
 
-        // 判定是否击中 (支持八度容错)
+        // 宽容判定逻辑 (支持八度)
         function checkPitchHit(user, target) {
             if (!user || !target) return false;
             const ratio = user / target;
-            const marginLow = 0.88, marginHigh = 1.12; // 宽松判定
+            const marginLow = 0.88, marginHigh = 1.12; // 接近全音的宽容度
             
-            if (ratio > marginLow && ratio < marginHigh) return true; // 原调
-            if (ratio > (marginLow * 0.5) && ratio < (marginHigh * 0.5)) return true; // 低八度
-            if (ratio > (marginLow * 2.0) && ratio < (marginHigh * 2.0)) return true; // 高八度
+            // 原调、低八度、高八度统统算对
+            if (ratio > marginLow && ratio < marginHigh) return true; 
+            if (ratio > (marginLow * 0.5) && ratio < (marginHigh * 0.5)) return true; 
+            if (ratio > (marginLow * 2.0) && ratio < (marginHigh * 2.0)) return true; 
             return false;
         }
 
-        // AMDF 音高检测 (抗噪版)
+        // AMDF 音高检测算法 (抗噪版)
         function getPitchAMDF(buf, sampleRate) {
             const SIZE = buf.length, MAX_SAMPLES = 1000; 
             const minPeriod = Math.floor(sampleRate/800), maxPeriod = Math.floor(sampleRate/60);
             let minVal = Infinity, bestPeriod = 0;
 
-            // 噪音门限：0.04 (避免呼吸声)
+            // RMS 静音门限：0.04 (过滤呼吸声)
             let rms = 0;
             for (let i = 0; i < MAX_SAMPLES; i += 4) rms += buf[i] * buf[i];
             rms = Math.sqrt(rms / (MAX_SAMPLES / 4));
             if (rms < 0.04) return -1; 
 
-            // 核心计算
+            // AMDF 核心
             for (let offset = minPeriod; offset < maxPeriod; offset += 2) {
                 let currentSum = 0;
                 for (let i = 0; i < 300; i += 2) currentSum += Math.abs(buf[i] - buf[i + offset]);
                 if (currentSum < minVal) { minVal = currentSum; bestPeriod = offset; }
             }
+            // 清晰度阈值
             return (minVal < 120) ? sampleRate / bestPeriod : -1;
         }
     </script>
