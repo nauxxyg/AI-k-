@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web K歌 </title>
+    <title>Web K歌 - 最终完美版 (降噪+八度支持)</title>
     <style>
         /* --- 沉浸式暗黑风格 UI --- */
         body { 
@@ -157,7 +157,7 @@
     <div id="canvas-wrapper">
         <canvas id="gameCanvas"></canvas>
         <div class="score-board">
-            <div class="score-label">总评分</div>
+            <div class="score-label">当前得分</div>
             <div class="score-value" id="scoreEl">0<span class="score-suffix">分</span></div>
         </div>
     </div>
@@ -175,7 +175,13 @@
 
     <script>
         /**
-         * Web K歌核心逻辑 - 完整极速版 (AMDF + 100分制)
+         * Web K歌核心逻辑 - 最终完美版
+         * 包含：
+         * 1. AMDF 极速算法
+         * 2. 100分制逻辑
+         * 3. 渲染指针优化
+         * 4. 抗噪降噪 (解决吹气飘红球)
+         * 5. 八度兼容 (解决分数过低)
          */
 
         // --- 全局变量 ---
@@ -192,12 +198,12 @@
         
         // 渲染与状态变量
         let frameCounter = 0;
-        let renderIndex = 0; // 渲染游标 (性能优化关键)
+        let renderIndex = 0; // 渲染游标
         let lastUserFreq = -1;
         
         // DOM 元素
         const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d', { alpha: false }); // 关闭透明通道加速
+        const ctx = canvas.getContext('2d', { alpha: false });
         const songSelect = document.getElementById('songSelect');
         const startBtn = document.getElementById('startBtn');
         const statusText = document.getElementById('statusText');
@@ -237,7 +243,7 @@
             } catch (e) {
                 console.error(e);
                 statusText.innerText = "错误：无法读取 playlist.json";
-                alert("请确保 playlist.json 存在且需要通过本地服务器访问 (localhost)");
+                alert("请确保 playlist.json 存在");
             }
 
             bgmAudio.addEventListener('ended', () => {
@@ -301,7 +307,12 @@
             if (!micSource) {
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ 
-                        audio: { echoCancellation: true, latency: 0 } 
+                        audio: { 
+                            echoCancellation: true, 
+                            autoGainControl: false, // 关闭自动增益，避免噪音被放大
+                            noiseSuppression: false, // 我们自己处理门限
+                            latency: 0 
+                        } 
                     });
                     micSource = audioCtx.createMediaStreamSource(stream);
                     analyser = audioCtx.createAnalyser();
@@ -330,11 +341,11 @@
                 loop();
             } catch (e) {
                 console.error(e);
-                alert("播放失败，浏览器可能拦截了自动播放。");
+                alert("播放失败，请点击页面后再试。");
             }
         };
 
-        // --- 主循环 (100分制逻辑核心) ---
+        // --- 主循环 (核心逻辑) ---
         function loop() {
             if (!isRunning) return;
             requestAnimationFrame(loop);
@@ -344,17 +355,17 @@
 
             // --- 0. 查找当前时刻的“标准答案” ---
             let targetPitch = 0;
-            // 快速在 renderIndex 附近查找当前时间的音高
+            // 快速在 renderIndex 附近查找
             for(let i = renderIndex; i < currentMelodyData.length; i++) {
                 const item = currentMelodyData[i];
-                if (Math.abs(item.t - currentTime) < 0.1) { // 0.1秒的时间窗口
+                if (Math.abs(item.t - currentTime) < 0.15) { // 稍微放宽时间对齐窗口
                     targetPitch = item.p;
                     break;
                 }
-                if (item.t > currentTime + 0.1) break; // 超时停止查找
+                if (item.t > currentTime + 0.15) break; 
             }
 
-            // --- 1. 极速音高检测 & 算分 (每3帧一次) ---
+            // --- 1. 极速音高检测 & 算分 ---
             let userFreq = lastUserFreq;
             
             if (frameCounter % 3 === 0) {
@@ -365,22 +376,21 @@
                     userFreq = detected;
                     lastUserFreq = detected;
                 } else {
-                    if (frameCounter % 15 === 0) lastUserFreq = -1; // 声音丢失防抖
+                    if (frameCounter % 10 === 0) lastUserFreq = -1; // 快速衰减
                 }
 
-                // >>> 百分制算分逻辑 <<<
+                // >>> 改进后的宽容评分逻辑 <<<
                 if (targetPitch > 0) {
-                    // 原唱现在在唱歌，分母 +1
                     totalVocalFrames++; 
 
-                    // 检查是否唱准 (允许半音误差约 6%)
+                    // 检查是否唱准 (支持八度 + 宽容度)
                     let isHit = false;
                     if (userFreq > 0) {
-                        const ratio = userFreq / targetPitch;
-                        if (ratio > 0.94 && ratio < 1.06) {
-                            isHit = true;
-                            hitVocalFrames++;
-                        }
+                        isHit = checkPitchHit(userFreq, targetPitch);
+                    }
+
+                    if (isHit) {
+                        hitVocalFrames++;
                     }
 
                     // 计算百分比
@@ -411,7 +421,7 @@
             ctx.lineWidth = 2;
             ctx.beginPath(); ctx.moveTo(playerX, 0); ctx.lineTo(playerX, canvasHeight); ctx.stroke();
 
-            // --- 3. 渲染音符 (性能优化) ---
+            // --- 3. 渲染音符 ---
             if (renderIndex >= currentMelodyData.length || currentMelodyData[renderIndex].t > currentTime + 10) {
                  renderIndex = 0;
             }
@@ -427,14 +437,12 @@
                 if (note.p <= 0) continue; 
                 const y = freqToY(note.p);
 
-                // 颜色逻辑：默认青色，如果此刻正在击中，且该音符位于判定线附近，变白
+                // 颜色逻辑：默认青色，如果此刻正在击中，变白
                 let color = '#00eebb'; 
                 
-                if (Math.abs(x - playerX) < 12) {
-                     // 检查是否正在击中 (视觉反馈)
+                if (Math.abs(x - playerX) < 15) { // 放宽视觉判定区
                      if (userFreq > 0 && targetPitch > 0) {
-                         const ratio = userFreq / targetPitch;
-                         if (ratio > 0.94 && ratio < 1.06) {
+                         if (checkPitchHit(userFreq, targetPitch)) {
                              color = '#ffffff'; // 高亮
                          }
                      }
@@ -451,9 +459,8 @@
                 ctx.arc(playerX, userY, 9, 0, Math.PI * 2);
                 
                 let isVisuallyHit = false;
-                if (targetPitch > 0) {
-                    const ratio = userFreq / targetPitch;
-                    if (ratio > 0.94 && ratio < 1.06) isVisuallyHit = true;
+                if (targetPitch > 0 && checkPitchHit(userFreq, targetPitch)) {
+                    isVisuallyHit = true;
                 }
 
                 if (isVisuallyHit) {
@@ -480,7 +487,28 @@
         }
 
         /**
-         * AMDF (平均幅度差) 极速算法
+         * 判定是否击中音高 (支持八度兼容)
+         */
+        function checkPitchHit(user, target) {
+            if (!user || !target) return false;
+            const ratio = user / target;
+            
+            // 允许 12% 的误差 (接近全音)
+            const marginLow = 0.88;
+            const marginHigh = 1.12;
+
+            // 1. 原调匹配
+            if (ratio > marginLow && ratio < marginHigh) return true;
+            // 2. 低八度匹配 (user 是 target 的 0.5 倍)
+            if (ratio > (marginLow * 0.5) && ratio < (marginHigh * 0.5)) return true;
+            // 3. 高八度匹配 (user 是 target 的 2.0 倍)
+            if (ratio > (marginLow * 2.0) && ratio < (marginHigh * 2.0)) return true;
+
+            return false;
+        }
+
+        /**
+         * AMDF (平均幅度差) 极速算法 - 抗噪增强版
          */
         function getPitchAMDF(buf, sampleRate) {
             const SIZE = buf.length;
@@ -494,13 +522,13 @@
             let minVal = Infinity;
             let bestPeriod = 0;
 
-            // 静音检测 (RMS)
+            // 1. 静音检测 (RMS) - 阈值提高到 0.04 抗呼吸声
             let rms = 0;
             for (let i = 0; i < MAX_SAMPLES; i += 4) rms += buf[i] * buf[i];
             rms = Math.sqrt(rms / (MAX_SAMPLES / 4));
-            if (rms < 0.015) return -1; 
+            if (rms < 0.04) return -1; 
 
-            // AMDF 核心 (减法代替乘法，隔点采样)
+            // 2. AMDF 核心 (减法代替乘法，隔点采样)
             for (let offset = minPeriod; offset < maxPeriod; offset += 2) {
                 let currentSum = 0;
                 for (let i = 0; i < 300; i += 2) {
@@ -512,7 +540,8 @@
                 }
             }
 
-            if (minVal < 150) { 
+            // 3. 清晰度校验 (防止风声被算作音高)
+            if (minVal < 120) { 
                 return sampleRate / bestPeriod;
             }
             return -1;
