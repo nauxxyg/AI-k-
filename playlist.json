@@ -1,12 +1,197 @@
 [
   {
+    "name": "你比从前快乐—周杰伦 加长版",
+    "mp3": "songs/你比从前快乐—周杰伦 加长版.mp3",
+    "json": "songs/你比从前快乐—周杰伦 加长版.json"
+  },
+  {
+    "name": "周杰伦 - 一路向北",
+    "mp3": "songs/周杰伦 - 一路向北.mp3",
+    "json": "songs/周杰伦 - 一路向北.json"
+  },
+  {
     "name": "周杰伦 - 三年二班",
     "mp3": "songs/周杰伦 - 三年二班.mp3",
     "json": "songs/周杰伦 - 三年二班.json"
   },
   {
+    "name": "周杰伦 - 你听得到 - 2004无与伦比演唱会",
+    "mp3": "songs/周杰伦 - 你听得到 - 2004无与伦比演唱会.mp3",
+    "json": "songs/周杰伦 - 你听得到 - 2004无与伦比演唱会.json"
+  },
+  {
+    "name": "周杰伦 - 你听得到",
+    "mp3": "songs/周杰伦 - 你听得到.mp3",
+    "json": "songs/周杰伦 - 你听得到.json"
+  },
+  {
+    "name": "周杰伦 - 分裂（离开）",
+    "mp3": "songs/周杰伦 - 分裂（离开）.mp3",
+    "json": "songs/周杰伦 - 分裂（离开）.json"
+  },
+  {
+    "name": "周杰伦 - 发如雪",
+    "mp3": "songs/周杰伦 - 发如雪.mp3",
+    "json": "songs/周杰伦 - 发如雪.json"
+  },
+  {
+    "name": "周杰伦 - 夜曲",
+    "mp3": "songs/周杰伦 - 夜曲.mp3",
+    "json": "songs/周杰伦 - 夜曲.json"
+  },
+  {
+    "name": "周杰伦 - 对不起",
+    "mp3": "songs/周杰伦 - 对不起.mp3",
+    "json": "songs/周杰伦 - 对不起.json"
+  },
+  {
+    "name": "周杰伦 - 将军",
+    "mp3": "songs/周杰伦 - 将军.mp3",
+    "json": "songs/周杰伦 - 将军.json"
+  },
+  {
+    "name": "周杰伦 - 开不了口",
+    "mp3": "songs/周杰伦 - 开不了口.mp3",
+    "json": "songs/周杰伦 - 开不了口.json"
+  },
+  {
+    "name": "周杰伦 - 心雨",
+    "mp3": "songs/周杰伦 - 心雨.mp3",
+    "json": "songs/周杰伦 - 心雨.json"
+  },
+  {
+    "name": "周杰伦 - 我不配(距离)",
+    "mp3": "songs/周杰伦 - 我不配(距离).mp3",
+    "json": "songs/周杰伦 - 我不配(距离).json"
+  },
+  {
+    "name": "周杰伦 - 搁浅",
+    "mp3": "songs/周杰伦 - 搁浅.mp3",
+    "json": "songs/周杰伦 - 搁浅.json"
+  },
+  {
+    "name": "周杰伦 - 晴天",
+    "mp3": "songs/周杰伦 - 晴天.mp3",
+    "json": "songs/周杰伦 - 晴天.json"
+  },
+  {
+    "name": "周杰伦 - 暗号",
+    "mp3": "songs/周杰伦 - 暗号.mp3",
+    "json": "songs/周杰伦 - 暗号.json"
+  },
+  {
+    "name": "周杰伦 - 最长的电影",
+    "mp3": "songs/周杰伦 - 最长的电影.mp3",
+    "json": "songs/周杰伦 - 最长的电影.json"
+  },
+  {
+    "name": "周杰伦 - 枫",
+    "mp3": "songs/周杰伦 - 枫.mp3",
+    "json": "songs/周杰伦 - 枫.json"
+  },
+  {
+    "name": "周杰伦 - 梯田",
+    "mp3": "songs/周杰伦 - 梯田.mp3",
+    "json": "songs/周杰伦 - 梯田.json"
+  },
+  {
+    "name": "周杰伦 - 浪漫手机",
+    "mp3": "songs/周杰伦 - 浪漫手机.mp3",
+    "json": "songs/周杰伦 - 浪漫手机.json"
+  },
+  {
+    "name": "周杰伦 - 爱在西元前",
+    "mp3": "songs/周杰伦 - 爱在西元前.mp3",
+    "json": "songs/周杰伦 - 爱在西元前.json"
+  },
+  {
+    "name": "周杰伦 - 爱情悬崖",
+    "mp3": "songs/周杰伦 - 爱情悬崖.mp3",
+    "json": "songs/周杰伦 - 爱情悬崖.json"
+  },
+  {
+    "name": "周杰伦 - 珊瑚海",
+    "mp3": "songs/周杰伦 - 珊瑚海.mp3",
+    "json": "songs/周杰伦 - 珊瑚海.json"
+  },
+  {
+    "name": "周杰伦 - 白色风车",
+    "mp3": "songs/周杰伦 - 白色风车.mp3",
+    "json": "songs/周杰伦 - 白色风车.json"
+  },
+  {
+    "name": "周杰伦 - 稻香",
+    "mp3": "songs/周杰伦 - 稻香.mp3",
+    "json": "songs/周杰伦 - 稻香.json"
+  },
+  {
+    "name": "周杰伦 - 简单爱",
+    "mp3": "songs/周杰伦 - 简单爱.mp3",
+    "json": "songs/周杰伦 - 简单爱.json"
+  },
+  {
+    "name": "周杰伦 - 蒲公英的约定",
+    "mp3": "songs/周杰伦 - 蒲公英的约定.mp3",
+    "json": "songs/周杰伦 - 蒲公英的约定.json"
+  },
+  {
+    "name": "周杰伦 - 迷迭香",
+    "mp3": "songs/周杰伦 - 迷迭香.mp3",
+    "json": "songs/周杰伦 - 迷迭香.json"
+  },
+  {
+    "name": "周杰伦 - 退后",
+    "mp3": "songs/周杰伦 - 退后.mp3",
+    "json": "songs/周杰伦 - 退后.json"
+  },
+  {
+    "name": "周杰伦 - 青花瓷",
+    "mp3": "songs/周杰伦 - 青花瓷.mp3",
+    "json": "songs/周杰伦 - 青花瓷.json"
+  },
+  {
+    "name": "周杰伦 - 飘移",
+    "mp3": "songs/周杰伦 - 飘移.mp3",
+    "json": "songs/周杰伦 - 飘移.json"
+  },
+  {
+    "name": "周杰伦 - 黑色毛衣",
+    "mp3": "songs/周杰伦 - 黑色毛衣.mp3",
+    "json": "songs/周杰伦 - 黑色毛衣.json"
+  },
+  {
+    "name": "周杰伦-枫",
+    "mp3": "songs/周杰伦-枫.mp3",
+    "json": "songs/周杰伦-枫.json"
+  },
+  {
     "name": "周杰伦、费玉清 - 千里之外",
     "mp3": "songs/周杰伦、费玉清 - 千里之外.mp3",
     "json": "songs/周杰伦、费玉清 - 千里之外.json"
+  },
+  {
+    "name": "周杰倫 - 斷了的弦",
+    "mp3": "songs/周杰倫 - 斷了的弦.mp3",
+    "json": "songs/周杰倫 - 斷了的弦.json"
+  },
+  {
+    "name": "周杰倫 - 軌跡",
+    "mp3": "songs/周杰倫 - 軌跡.mp3",
+    "json": "songs/周杰倫 - 軌跡.json"
+  },
+  {
+    "name": "花海",
+    "mp3": "songs/花海.mp3",
+    "json": "songs/花海.json"
+  },
+  {
+    "name": "霍元甲-周杰伦",
+    "mp3": "songs/霍元甲-周杰伦.mp3",
+    "json": "songs/霍元甲-周杰伦.json"
+  },
+  {
+    "name": "黑色幽默 - 周杰伦",
+    "mp3": "songs/黑色幽默 - 周杰伦.mp3",
+    "json": "songs/黑色幽默 - 周杰伦.json"
   }
 ]
