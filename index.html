@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Web K歌 - 歌单版</title>
+    <style>
+        body { background: #111; color: white; display: flex; flex-direction: column; align-items: center; font-family: 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; margin: 0; }
+        
+        /* 顶部控制栏 */
+        .top-bar {
+            background: #222; width: 100%; padding: 15px; 
+            display: flex; justify-content: center; gap: 20px; 
+            align-items: center; box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        /* 漂亮的下拉框 */
+        select {
+            padding: 10px 15px; font-size: 16px; border-radius: 5px;
+            background: #333; color: white; border: 1px solid #555;
+            min-width: 200px; cursor: pointer;
+        }
+
+        /* 画布 */
+        #canvas-container {
+            position: relative; width: 90%; height: 500px; background: #1a1a1a; 
+            border: 2px solid #333; margin-top: 20px; border-radius: 10px;
+        }
+        canvas { width: 100%; height: 100%; display: block; border-radius: 10px; }
+        
+        .score-board {
+            position: absolute; top: 20px; right: 30px; text-align: right;
+            background: rgba(0,0,0,0.6); padding: 15px; border-radius: 10px;
+        }
+        .score-num { font-size: 50px; color: #00ffcc; font-weight: bold; font-family: monospace; }
+        
+        /* 底部操作区 */
+        .bottom-controls {
+            margin-top: 20px; width: 80%; display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .vol-box { display: flex; align-items: center; gap: 10px; background: #333; padding: 10px 20px; border-radius: 30px;}
+        input[type=range] { accent-color: #00ffcc; cursor: pointer; }
+
+        .btn-main { 
+            padding: 12px 40px; cursor: pointer; 
+            background: linear-gradient(135deg, #00ffcc, #00b7ff); 
+            color: #000; border: none; border-radius: 50px; 
+            font-size: 18px; font-weight: bold;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.4);
+            transition: transform 0.2s;
+        }
+        .btn-main:active { transform: scale(0.95); }
+        .btn-main:disabled { background: #555; color: #aaa; box-shadow: none; cursor: not-allowed;}
+
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div style="font-weight:bold; color:#aaa;">当前曲目:</div>
+        <select id="songSelect" onchange="changeSong()">
+            <option value="">正在加载歌单...</option>
+        </select>
+        <div id="loadingStatus" style="color:#00ffcc; font-size:14px; display:none;">加载数据中...</div>
+    </div>
+
+    <div id="canvas-container">
+        <canvas id="gameCanvas"></canvas>
+        <div class="score-board">
+            <div style="font-size:14px; color:#aaa;">SCORE</div>
+            <div class="score-num" id="scoreEl">0</div>
+        </div>
+    </div>
+
+    <div class="bottom-controls">
+        <div class="vol-box">
+            <span>🔈 伴奏</span>
+            <input type="range" id="volSlider" min="0" max="1" step="0.05" value="1" oninput="updateVolume(this.value)">
+        </div>
+        
+        <button id="startBtn" class="btn-main" onclick="startSinging()" disabled>▶ 开始演唱</button>
+        
+        <div style="width: 150px;"></div> </div>
+
+    <audio id="audio" style="display:none"></audio>
+
+    <script>
+        // --- 变量定义 ---
+        let playlist = []; // 存放歌单
+        let currentMelodyData = []; 
+        
+        let audioCtx, analyser, micSource, trackSource, gainNode;
+        let dataArray;
+        let isRunning = false;
+        let score = 0;
+        
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const audio = document.getElementById('audio');
+        const songSelect = document.getElementById('songSelect');
+        const startBtn = document.getElementById('startBtn');
+        const loadingStatus = document.getElementById('loadingStatus');
+
+        let canvasWidth, canvasHeight;
+        const viewDuration = 5;
+
+        // 初始化
+        window.onload = init;
+        window.onresize = resize;
+        resize();
+
+        function resize() {
+            canvasWidth = canvas.clientWidth;
+            canvasHeight = canvas.clientHeight;
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+        }
+
+        // 1. 初始化：读取歌单
+        async function init() {
+            try {
+                const res = await fetch('playlist.json');
+                playlist = await res.json();
+                
+                // 渲染下拉菜单
+                songSelect.innerHTML = '<option value="" disabled selected>-- 请选择歌曲 --</option>';
+                playlist.forEach((song, index) => {
+                    const opt = document.createElement('option');
+                    opt.value = index; // 存索引
+                    opt.innerText = song.name;
+                    songSelect.appendChild(opt);
+                });
+                
+                alert("歌单加载成功！请选择一首歌曲。");
+            } catch (e) {
+                alert("无法读取歌单 playlist.json。请确保运行了 python 脚本并生成了文件。");
+            }
+        }
+
+        // 2. 切歌逻辑
+        async function changeSong() {
+            const index = songSelect.value;
+            const song = playlist[index];
+            if (!song) return;
+
+            // 重置状态
+            isRunning = false;
+            startBtn.disabled = true;
+            loadingStatus.style.display = 'block';
+            score = 0;
+            document.getElementById('scoreEl').innerText = 0;
+            
+            // 设置音频源
+            audio.src = song.mp3;
+            
+            // 加载 JSON 数据
+            try {
+                const res = await fetch(song.json);
+                currentMelodyData = await res.json();
+                
+                loadingStatus.style.display = 'none';
+                startBtn.disabled = false;
+                startBtn.innerText = "▶ 开始演唱";
+            } catch (e) {
+                alert("加载歌曲数据失败，请检查 json 文件是否存在。");
+                loadingStatus.style.display = 'none';
+            }
+        }
+
+        // 3. 开始演唱
+        async function startSinging() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') await audioCtx.resume();
+
+            // 获取麦克风 (只获取一次)
+            if (!micSource) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    analyser = audioCtx.createAnalyser();
+                    analyser.fftSize = 2048;
+                    micSource = audioCtx.createMediaStreamSource(stream);
+                    micSource.connect(analyser);
+                    dataArray = new Float32Array(analyser.fftSize);
+                } catch(e) {
+                    alert("无法获取麦克风权限！");
+                    return;
+                }
+            }
+
+            // 重建伴奏链路 (每次切歌都要重新连，因为audio元素可能变了或状态重置)
+            // 注意：为了防止多次连接报错，我们用 try catch 简单处理，或者每次新建
+            // 最稳妥的方式：复用 audioCtx，但 GainNode 可以重建
+            if (trackSource) { 
+                // 如果之前有源，这里不需要断开，因为 audio 元素是同一个 DOM
+            } else {
+                trackSource = audioCtx.createMediaElementSource(audio);
+                gainNode = audioCtx.createGain();
+                gainNode.gain.value = document.getElementById('volSlider').value;
+                trackSource.connect(gainNode).connect(audioCtx.destination);
+            }
+            
+            audio.play();
+            isRunning = true;
+            startBtn.disabled = true;
+            startBtn.innerText = "演唱中...";
+            loop();
+        }
+
+        // 音量调节
+        function updateVolume(val) {
+            if (gainNode) gainNode.gain.value = val;
+            else audio.volume = val;
+        }
+
+        // --- 核心循环 (跟之前一样) ---
+        function loop() {
+            if (!isRunning) return;
+            requestAnimationFrame(loop);
+
+            const currentTime = audio.currentTime;
+            analyser.getFloatTimeDomainData(dataArray);
+            const userFreq = autoCorrelate(dataArray, audioCtx.sampleRate);
+
+            // 绘制
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+            drawGrid();
+
+            // 绘制目标线
+            ctx.lineWidth = 6;
+            ctx.lineCap = 'round';
+            let matchedTargetFreq = 0;
+
+            for (let i = 0; i < currentMelodyData.length; i += 4) { // 稍微稀疏一点提升性能
+                const point = currentMelodyData[i];
+                if (point.t > currentTime - 1 && point.t < currentTime + viewDuration - 1) {
+                    const x = (point.t - currentTime + 1) / viewDuration * canvasWidth; 
+                    if (point.p > 0) {
+                        const y = freqToY(point.p);
+                        ctx.fillStyle = '#00ffcc';
+                        ctx.fillRect(x, y, 5, 5);
+                        
+                        if (Math.abs(x - (canvasWidth * 0.2)) < 15) {
+                            matchedTargetFreq = point.p;
+                        }
+                    }
+                }
+            }
+
+            // 判定线
+            const playerX = canvasWidth * 0.2;
+            ctx.beginPath();
+            ctx.moveTo(playerX, 0);
+            ctx.lineTo(playerX, canvasHeight);
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.stroke();
+
+            // 用户光标
+            if (userFreq > 0) {
+                const userY = freqToY(userFreq);
+                ctx.beginPath();
+                ctx.arc(playerX, userY, 15, 0, Math.PI*2);
+                
+                let hit = false;
+                if (matchedTargetFreq > 0) {
+                    const ratio = userFreq / matchedTargetFreq;
+                    if (ratio > 0.94 && ratio < 1.06) hit = true;
+                }
+
+                if (hit) {
+                    ctx.fillStyle = '#fff';
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = '#00ffcc';
+                    score++;
+                    document.getElementById('scoreEl').innerText = Math.floor(score / 5);
+                } else {
+                    ctx.fillStyle = '#ff0055';
+                    ctx.shadowBlur = 0;
+                }
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+
+            if (audio.ended) {
+                isRunning = false;
+                startBtn.disabled = false;
+                startBtn.innerText = "▶ 重新演唱";
+                alert("演唱结束！总分: " + Math.floor(score/5));
+            }
+        }
+
+        function freqToY(freq) {
+            const minF = 65, maxF = 1000;
+            if (freq < minF) freq = minF;
+            if (freq > maxF) freq = maxF;
+            const percent = (Math.log(freq) - Math.log(minF)) / (Math.log(maxF) - Math.log(minF));
+            return canvasHeight - (percent * canvasHeight);
+        }
+
+        function drawGrid() {
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            [130, 261, 523].forEach(f => {
+                let y = freqToY(f);
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvasWidth, y);
+            });
+            ctx.stroke();
+        }
+
+        function autoCorrelate(buf, sampleRate) {
+            // (算法代码保持不变，为了篇幅省略，请直接复用之前的 autoCorrelate 函数)
+            let SIZE = buf.length;
+            let rms = 0;
+            for (let i = 0; i < SIZE; i++) rms += buf[i] * buf[i];
+            rms = Math.sqrt(rms / SIZE);
+            if (rms < 0.05) return -1; 
+            let r1 = 0, r2 = SIZE - 1, thres = 0.2;
+            for (let i = 0; i < SIZE / 2; i++) if (Math.abs(buf[i]) < thres) { r1 = i; break; }
+            for (let i = 1; i < SIZE / 2; i++) if (Math.abs(buf[SIZE - i]) < thres) { r2 = SIZE - i; break; }
+            buf = buf.slice(r1, r2);
+            SIZE = buf.length;
+            let c = new Array(SIZE).fill(0);
+            for (let i = 0; i < SIZE; i++) for (let j = 0; j < SIZE - i; j++) c[i] = c[i] + buf[j] * buf[j + i];
+            let d = 0; while (c[d] > c[d + 1]) d++;
+            let maxval = -1, maxpos = -1;
+            for (let i = d; i < SIZE; i++) if (c[i] > maxval) { maxval = c[i]; maxpos = i; }
+            let T0 = maxpos;
+            let x1 = c[T0 - 1], x2 = c[T0], x3 = c[T0 + 1];
+            let a = (x1 + x3 - 2 * x2) / 2;
+            let b = (x3 - x1) / 2;
+            if (a) T0 = T0 - b / (2 * a);
+            return sampleRate / T0;
+        }
+    </script>
+</body>
+</html>
