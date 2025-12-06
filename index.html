@@ -2,143 +2,181 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web K歌 - 最终完美版 (降噪+八度支持)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Web K歌 - 手机专业版</title>
     <style>
-        /* --- 沉浸式暗黑风格 UI --- */
+        /* --- 全局样式重置 --- */
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; /* 去除点击高亮 */
+            touch-action: none; /* 禁止默认触摸行为(滚动等) */
+        }
+        
         body { 
             background: #111; 
             color: #eee; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100dvh; /* 动态视口高度，解决Safari地址栏遮挡 */
+            width: 100vw;
+            margin: 0; 
+            overflow: hidden; 
             display: flex; 
             flex-direction: column; 
-            align-items: center; 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-            height: 100vh; 
-            overflow: hidden; 
-            margin: 0; 
-            user-select: none;
+            user-select: none; /* 禁止长按选中文字 */
         }
 
-        /* 顶部栏 */
+        /* --- 1. 顶部栏 (Header) --- */
         .top-bar {
-            background: #1e1e1e;
+            flex-shrink: 0; 
+            background: #1a1a1a;
             width: 100%;
-            height: 60px;
+            height: 50px; 
             display: flex;
-            justify-content: center;
+            justify-content: space-between; 
             align-items: center;
-            gap: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
-            z-index: 10;
+            padding: 0 15px;
+            border-bottom: 1px solid #333;
+            z-index: 20;
         }
 
         select {
-            padding: 8px 12px;
             background: #333;
             color: #fff;
             border: 1px solid #555;
-            border-radius: 4px;
-            font-size: 16px;
-            min-width: 220px;
+            border-radius: 20px;
+            padding: 6px 15px;
+            font-size: 14px;
+            max-width: 60%; 
             outline: none;
+            appearance: none; /* 去除默认下拉箭头 */
+            text-align: center;
         }
 
         .status-badge {
             font-size: 12px;
-            padding: 4px 8px;
-            border-radius: 4px;
-            background: #2a2a2a;
-            color: #aaa;
-            font-family: monospace;
+            color: #00ffcc;
+            background: rgba(0, 255, 204, 0.1);
+            padding: 4px 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 204, 0.2);
         }
 
-        /* 画布区域 */
+        /* --- 2. 游戏画布 (Main) --- */
         #canvas-wrapper {
+            flex: 1; /* 自动撑满剩余高度 */
             position: relative;
-            flex: 1;
-            width: 95%;
-            margin: 20px 0;
+            width: 100%;
             background: #000;
-            border: 2px solid #333;
-            border-radius: 12px;
             overflow: hidden;
-            box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
+            /* 居中 loading 提示 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         canvas {
+            position: absolute;
+            top: 0; left: 0;
             width: 100%;
             height: 100%;
             display: block;
         }
 
-        /* 分数板 */
+        /* 悬浮分数板 */
         .score-board {
             position: absolute;
-            top: 20px;
-            right: 30px;
+            top: 15px;
+            right: 20px;
             text-align: right;
             pointer-events: none;
+            z-index: 10;
         }
-        .score-label { font-size: 14px; color: #888; letter-spacing: 2px; }
         .score-value { 
-            font-size: 64px; 
+            font-size: 42px; 
             color: #00ffcc; 
-            font-weight: 700; 
-            font-family: 'Courier New', monospace; 
-            text-shadow: 0 0 20px rgba(0, 255, 204, 0.4);
+            font-weight: 800; 
+            font-family: 'Helvetica Neue', Arial, sans-serif; 
+            text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
         }
-        .score-suffix { font-size: 20px; color: #555; }
+        .score-label { font-size: 12px; color: #888; letter-spacing: 1px; }
 
-        /* 底部控制栏 */
+        /* --- 3. 底部控制栏 (Footer) --- */
         .bottom-controls {
-            height: 80px;
+            flex-shrink: 0; 
+            background: #1a1a1a;
             width: 100%;
-            background: #1e1e1e;
+            padding: 12px 20px;
+            /* 适配 iPhone 底部安全区 */
+            padding-bottom: max(12px, env(safe-area-inset-bottom));
+            
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            gap: 30px;
             border-top: 1px solid #333;
+            gap: 15px;
         }
 
-        /* 音量控制 */
+        /* 音量条容器 */
         .vol-control {
+            flex: 1;
             display: flex;
             align-items: center;
             gap: 10px;
-            background: #2a2a2a;
-            padding: 8px 15px;
-            border-radius: 30px;
+            background: #252525;
+            padding: 0 15px;
+            height: 44px;
+            border-radius: 22px;
         }
+        .vol-label { font-size: 12px; color: #aaa; white-space: nowrap; }
         input[type=range] {
-            accent-color: #00ffcc;
+            flex: 1;
+            height: 4px;
+            border-radius: 2px;
+            accent-color: #00ffcc; /* 安卓/新版Chrome变色 */
             cursor: pointer;
-            width: 100px;
         }
 
-        /* 主按钮 */
+        /* 开始按钮 */
         .btn-main {
-            padding: 12px 50px;
-            cursor: pointer;
-            background: linear-gradient(90deg, #00ffcc, #0099ff);
+            min-width: 100px;
+            height: 44px;
+            padding: 0 20px;
+            background: linear-gradient(135deg, #00ffcc, #0099ff);
             color: #000;
             border: none;
-            border-radius: 50px;
-            font-size: 18px;
+            border-radius: 22px;
+            font-size: 16px;
             font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.2s;
-            box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 255, 204, 0.3);
+            transition: transform 0.1s;
         }
-        .btn-main:hover { transform: scale(1.05); filter: brightness(1.1); }
-        .btn-main:active { transform: scale(0.95); }
+        .btn-main:active { transform: scale(0.92); filter: brightness(0.9); }
         .btn-main:disabled { 
-            background: #444; 
-            color: #888; 
-            cursor: not-allowed; 
-            transform: none; 
-            box-shadow: none;
+            background: #333; 
+            color: #666; 
+            box-shadow: none; 
+            transform: none;
+        }
+
+        /* --- 横屏提示层 --- */
+        #rotate-hint {
+            display: none; /* 默认隐藏 */
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+        }
+        #rotate-hint span { font-size: 40px; margin-bottom: 20px; display: block; }
+
+        /* 当屏幕很窄时（竖屏），建议横屏 */
+        @media screen and (max-width: 500px) {
+            /* 可以在这里把 #rotate-hint 设为 flex 来强制横屏，
+               但为了不打扰用户，我们只调整UI大小 */
+            .score-value { font-size: 32px; }
         }
 
         #bgmAudio { display: none; }
@@ -147,9 +185,8 @@
 <body>
 
     <div class="top-bar">
-        <div style="color:#888;">♪</div>
         <select id="songSelect">
-            <option value="">正在读取歌单...</option>
+            <option value="">正在初始化...</option>
         </select>
         <div id="statusText" class="status-badge">等待选择</div>
     </div>
@@ -157,53 +194,46 @@
     <div id="canvas-wrapper">
         <canvas id="gameCanvas"></canvas>
         <div class="score-board">
-            <div class="score-label">当前得分</div>
-            <div class="score-value" id="scoreEl">0<span class="score-suffix">分</span></div>
+            <div class="score-label">SCORE</div>
+            <div class="score-value" id="scoreEl">0</div>
         </div>
     </div>
 
     <div class="bottom-controls">
         <div class="vol-control">
-            <span>🔊 伴奏</span>
+            <span class="vol-label">🎤 伴奏音量</span>
             <input type="range" id="volSlider" min="0" max="1" step="0.05" value="0.7">
         </div>
-        
-        <button id="startBtn" class="btn-main" disabled>请选择歌曲</button>
+        <button id="startBtn" class="btn-main" disabled>请选歌</button>
     </div>
 
     <audio id="bgmAudio" crossorigin="anonymous"></audio>
 
     <script>
-        /**
-         * Web K歌核心逻辑 - 最终完美版
-         * 包含：
-         * 1. AMDF 极速算法
-         * 2. 100分制逻辑
-         * 3. 渲染指针优化
-         * 4. 抗噪降噪 (解决吹气飘红球)
-         * 5. 八度兼容 (解决分数过低)
-         */
+        // ==========================================
+        //  Web K歌核心引擎 - Mobile Professional
+        // ==========================================
 
-        // --- 全局变量 ---
+        // --- 全局状态 ---
         let playlist = [];
         let currentMelodyData = [];
         let audioCtx, analyser, micSource, bgmSourceNode, bgmGainNode;
         let dataArray;
         let isRunning = false;
         
-        // --- 核心评分变量 ---
+        // --- 评分相关 ---
         let score = 0;
-        let totalVocalFrames = 0; // 原唱有声总帧数 (分母)
-        let hitVocalFrames = 0;   // 击中帧数 (分子)
+        let totalVocalFrames = 0; // 原唱有声总帧数
+        let hitVocalFrames = 0;   // 击中帧数
         
-        // 渲染与状态变量
+        // --- 渲染循环相关 ---
         let frameCounter = 0;
-        let renderIndex = 0; // 渲染游标
+        let renderIndex = 0;
         let lastUserFreq = -1;
         
-        // DOM 元素
+        // --- DOM 元素引用 ---
         const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d', { alpha: false });
+        const ctx = canvas.getContext('2d', { alpha: false }); // 关闭透明层加速渲染
         const songSelect = document.getElementById('songSelect');
         const startBtn = document.getElementById('startBtn');
         const statusText = document.getElementById('statusText');
@@ -211,26 +241,29 @@
         const volSlider = document.getElementById('volSlider');
         const bgmAudio = document.getElementById('bgmAudio');
 
-        // 视图配置
+        // --- 视口配置 ---
         let canvasWidth, canvasHeight;
-        const VIEW_DURATION = 4.5; // 屏幕显示多少秒的内容
-        const NOTE_HEIGHT = 6;     // 音符方块高度
+        const VIEW_DURATION = 4.0; // 屏幕显示4秒内容，适合手机
+        const NOTE_HEIGHT = 10;    // 音符加粗，方便看清
 
-        // --- 初始化 ---
+        // ============================
+        // 1. 初始化与事件绑定
+        // ============================
         window.onload = async () => {
             resizeCanvas();
             window.addEventListener('resize', resizeCanvas);
             
+            // 音量实时调节
             volSlider.oninput = () => {
                 if(bgmGainNode) bgmGainNode.gain.value = volSlider.value;
             };
 
-            // 加载歌单
+            // 加载歌单列表
             try {
                 const res = await fetch('playlist.json?t=' + Date.now());
                 playlist = await res.json();
                 
-                songSelect.innerHTML = '<option value="" disabled selected>-- 请选择歌曲 --</option>';
+                songSelect.innerHTML = '<option value="" disabled selected>👉 请点击选择歌曲</option>';
                 playlist.forEach((song, index) => {
                     const opt = document.createElement('option');
                     opt.value = index;
@@ -239,30 +272,40 @@
                 });
                 
                 songSelect.addEventListener('change', loadSongData);
-                statusText.innerText = "歌单已就绪";
+                statusText.innerText = "准备就绪";
             } catch (e) {
                 console.error(e);
-                statusText.innerText = "错误：无法读取 playlist.json";
-                alert("请确保 playlist.json 存在");
+                statusText.innerText = "列表加载失败";
+                statusText.style.color = "#ff3366";
+                alert("无法读取 playlist.json，请确保文件存在。");
             }
 
+            // 监听播放结束
             bgmAudio.addEventListener('ended', () => {
                 isRunning = false;
                 startBtn.disabled = false;
                 startBtn.innerText = "再来一局";
-                alert(`演唱结束！最终得分: ${score}分`);
+                alert(`演唱结束！你的得分是: ${score}`);
             });
         };
 
+        // 适配高清屏幕 (Retina Display)
         function resizeCanvas() {
             const wrapper = document.getElementById('canvas-wrapper');
             canvasWidth = wrapper.clientWidth;
             canvasHeight = wrapper.clientHeight;
-            canvas.width = canvasWidth;
-            canvas.height = canvasHeight;
+            
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = canvasWidth * dpr;
+            canvas.height = canvasHeight * dpr;
+            
+            ctx.resetTransform(); // 重置矩阵
+            ctx.scale(dpr, dpr);  // 缩放绘图上下文
         }
 
-        // --- 加载歌曲 ---
+        // ============================
+        // 2. 加载歌曲数据
+        // ============================
         async function loadSongData() {
             const index = songSelect.value;
             const song = playlist[index];
@@ -277,19 +320,20 @@
                 const res = await fetch(song.json);
                 currentMelodyData = await res.json();
                 
-                // --- 重置所有状态 ---
+                // 重置所有状态
                 renderIndex = 0;
                 score = 0;
                 totalVocalFrames = 0;
                 hitVocalFrames = 0;
-                scoreEl.innerHTML = '0<span class="score-suffix">分</span>';
+                scoreEl.innerText = '0';
                 
-                statusText.innerText = "准备就绪";
+                statusText.innerText = "加载完毕";
                 startBtn.disabled = false;
-                startBtn.innerText = "▶ 开始演唱";
+                startBtn.innerText = "▶ 开始";
             } catch (e) {
-                statusText.innerText = "数据加载失败";
                 console.error(e);
+                statusText.innerText = "数据错误";
+                alert("无法加载歌曲数据 (JSON/MP3 404)");
             }
         }
 
@@ -299,18 +343,23 @@
             bgmAudio.currentTime = 0;
         }
 
-        // --- 开始游戏 ---
+        // ============================
+        // 3. 启动游戏 (处理音频权限)
+        // ============================
         startBtn.onclick = async () => {
+            // 初始化 AudioContext (必须在点击事件中触发)
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if (audioCtx.state === 'suspended') await audioCtx.resume();
 
+            // 获取麦克风流
             if (!micSource) {
                 try {
+                    statusText.innerText = "请求麦克风...";
                     const stream = await navigator.mediaDevices.getUserMedia({ 
                         audio: { 
-                            echoCancellation: true, 
-                            autoGainControl: false, // 关闭自动增益，避免噪音被放大
-                            noiseSuppression: false, // 我们自己处理门限
+                            echoCancellation: true, // 回声消除
+                            autoGainControl: false, // 禁止自动增益(防止噪音放大)
+                            noiseSuppression: false, 
                             latency: 0 
                         } 
                     });
@@ -320,11 +369,13 @@
                     micSource.connect(analyser);
                     dataArray = new Float32Array(analyser.fftSize);
                 } catch (e) {
-                    alert("需要麦克风权限！");
+                    alert("无法获取麦克风权限，无法评分！");
+                    statusText.innerText = "无权限";
                     return;
                 }
             }
 
+            // 连接伴奏
             if (!bgmSourceNode) {
                 bgmSourceNode = audioCtx.createMediaElementSource(bgmAudio);
                 bgmGainNode = audioCtx.createGain();
@@ -333,6 +384,7 @@
                 bgmGainNode.connect(audioCtx.destination);
             }
 
+            // 播放
             try {
                 await bgmAudio.play();
                 isRunning = true;
@@ -340,12 +392,13 @@
                 startBtn.innerText = "演唱中...";
                 loop();
             } catch (e) {
-                console.error(e);
-                alert("播放失败，请点击页面后再试。");
+                alert("播放失败，请重试");
             }
         };
 
-        // --- 主循环 (核心逻辑) ---
+        // ============================
+        // 4. 游戏主循环 (Render Loop)
+        // ============================
         function loop() {
             if (!isRunning) return;
             requestAnimationFrame(loop);
@@ -353,21 +406,21 @@
             frameCounter++;
             const currentTime = bgmAudio.currentTime;
 
-            // --- 0. 查找当前时刻的“标准答案” ---
+            // --- A. 查找当前时刻的目标音高 ---
             let targetPitch = 0;
-            // 快速在 renderIndex 附近查找
+            // 简单的搜索优化：从上次渲染的位置附近开始找
             for(let i = renderIndex; i < currentMelodyData.length; i++) {
                 const item = currentMelodyData[i];
-                if (Math.abs(item.t - currentTime) < 0.15) { // 稍微放宽时间对齐窗口
+                if (Math.abs(item.t - currentTime) < 0.15) { 
                     targetPitch = item.p;
                     break;
                 }
+                // 如果数据已经超过当前时间太远，就不用找了
                 if (item.t > currentTime + 0.15) break; 
             }
 
-            // --- 1. 极速音高检测 & 算分 ---
+            // --- B. 麦克风音高检测 (每3帧算一次，省电) ---
             let userFreq = lastUserFreq;
-            
             if (frameCounter % 3 === 0) {
                 analyser.getFloatTimeDomainData(dataArray);
                 const detected = getPitchAMDF(dataArray, audioCtx.sampleRate);
@@ -376,36 +429,31 @@
                     userFreq = detected;
                     lastUserFreq = detected;
                 } else {
-                    if (frameCounter % 10 === 0) lastUserFreq = -1; // 快速衰减
+                    // 声音衰减处理：10帧没声音才归零，避免闪烁
+                    if (frameCounter % 10 === 0) lastUserFreq = -1; 
                 }
 
-                // >>> 改进后的宽容评分逻辑 <<<
+                // --- 评分逻辑 ---
                 if (targetPitch > 0) {
                     totalVocalFrames++; 
-
-                    // 检查是否唱准 (支持八度 + 宽容度)
-                    let isHit = false;
-                    if (userFreq > 0) {
-                        isHit = checkPitchHit(userFreq, targetPitch);
-                    }
-
-                    if (isHit) {
+                    if (userFreq > 0 && checkPitchHit(userFreq, targetPitch)) {
                         hitVocalFrames++;
                     }
-
-                    // 计算百分比
                     if (totalVocalFrames > 0) {
+                        // 实时计算百分比
                         score = Math.floor((hitVocalFrames / totalVocalFrames) * 100);
-                        scoreEl.innerHTML = score + '<span class="score-suffix">分</span>';
+                        scoreEl.innerText = score;
                     }
                 }
             }
 
-            // --- 2. 绘制场景 ---
+            // --- C. 绘制 ---
+            
+            // 1. 清空背景
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-            // 参考线
+            // 2. 绘制五线谱参考线
             ctx.strokeStyle = '#222';
             ctx.lineWidth = 1;
             ctx.beginPath();
@@ -415,69 +463,86 @@
             });
             ctx.stroke();
 
-            // 判定线
-            const playerX = canvasWidth * 0.2;
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+            // 3. 绘制判定线 (固定在左侧 25% 处)
+            const playerX = canvasWidth * 0.25;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
             ctx.lineWidth = 2;
             ctx.beginPath(); ctx.moveTo(playerX, 0); ctx.lineTo(playerX, canvasHeight); ctx.stroke();
 
-            // --- 3. 渲染音符 ---
-            if (renderIndex >= currentMelodyData.length || currentMelodyData[renderIndex].t > currentTime + 10) {
-                 renderIndex = 0;
-            }
-            while (renderIndex < currentMelodyData.length - 1 && currentMelodyData[renderIndex].t < currentTime - 1) {
-                renderIndex++;
-            }
+            // 4. 绘制音符 (滚动逻辑)
+            // 游标修正：如果进度被拖拽，重置游标
+            if (renderIndex >= currentMelodyData.length || currentMelodyData[renderIndex].t > currentTime + 10) renderIndex = 0;
+            // 快速跳过过期音符
+            while (renderIndex < currentMelodyData.length - 1 && currentMelodyData[renderIndex].t < currentTime - 1) renderIndex++;
 
             for (let i = renderIndex; i < currentMelodyData.length; i++) {
                 const note = currentMelodyData[i];
+                // 超出屏幕右侧则停止绘制
                 if (note.t > currentTime + VIEW_DURATION) break;
 
-                const x = (note.t - currentTime + 1) / VIEW_DURATION * canvasWidth;
-                if (note.p <= 0) continue; 
-                const y = freqToY(note.p);
+                // 计算 X 轴坐标 (核心滚动公式)
+                // playerX 是当前时间点，(note.t - currentTime) 是时间差
+                const drawX = playerX + (note.t - currentTime) / VIEW_DURATION * canvasWidth;
 
-                // 颜色逻辑：默认青色，如果此刻正在击中，变白
-                let color = '#00eebb'; 
+                // 屏幕左侧外的不用画
+                if (note.p <= 0 || drawX < -20) continue; 
                 
-                if (Math.abs(x - playerX) < 15) { // 放宽视觉判定区
-                     if (userFreq > 0 && targetPitch > 0) {
-                         if (checkPitchHit(userFreq, targetPitch)) {
-                             color = '#ffffff'; // 高亮
-                         }
+                const y = freqToY(note.p);
+                let color = '#00eebb'; // 默认青色
+
+                // 视觉判定：当音符经过判定线附近
+                if (Math.abs(drawX - playerX) < 15) { 
+                     // 如果此时唱对了，变白
+                     if (userFreq > 0 && targetPitch > 0 && checkPitchHit(userFreq, targetPitch)) {
+                         color = '#ffffff'; 
                      }
                 }
                 
                 ctx.fillStyle = color;
-                ctx.fillRect(x, y - NOTE_HEIGHT/2, 6, NOTE_HEIGHT);
+                // 手动绘制圆角矩形 (兼容旧手机)
+                drawRoundRect(ctx, drawX, y - NOTE_HEIGHT/2, 12, NOTE_HEIGHT, 4);
             }
 
-            // --- 4. 玩家光标 ---
+            // 5. 绘制玩家光标
             if (userFreq > 0) {
                 const userY = freqToY(userFreq);
                 ctx.beginPath();
-                ctx.arc(playerX, userY, 9, 0, Math.PI * 2);
+                ctx.arc(playerX, userY, 10, 0, Math.PI * 2);
                 
-                let isVisuallyHit = false;
                 if (targetPitch > 0 && checkPitchHit(userFreq, targetPitch)) {
-                    isVisuallyHit = true;
-                }
-
-                if (isVisuallyHit) {
                     ctx.fillStyle = '#ffffff';
-                    ctx.shadowBlur = 20;
+                    ctx.shadowBlur = 15;
                     ctx.shadowColor = '#00ffcc';
                 } else {
                     ctx.fillStyle = '#ff3366'; // 跑调红
                     ctx.shadowBlur = 0;
                 }
-                
                 ctx.fill();
                 ctx.shadowBlur = 0;
             }
         }
 
-        // --- 辅助工具 ---
+        // ============================
+        // 5. 辅助算法与函数
+        // ============================
+
+        // 兼容性圆角矩形绘制
+        function drawRoundRect(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // 频率转 Y 坐标 (对数映射)
         function freqToY(freq) {
             const minF = 65, maxF = 1000;
             if (freq < minF) freq = minF;
@@ -486,67 +551,38 @@
             return canvasHeight - (percent * canvasHeight);
         }
 
-        /**
-         * 判定是否击中音高 (支持八度兼容)
-         */
+        // 判定是否击中 (支持八度容错)
         function checkPitchHit(user, target) {
             if (!user || !target) return false;
             const ratio = user / target;
+            const marginLow = 0.88, marginHigh = 1.12; // 宽松判定
             
-            // 允许 12% 的误差 (接近全音)
-            const marginLow = 0.88;
-            const marginHigh = 1.12;
-
-            // 1. 原调匹配
-            if (ratio > marginLow && ratio < marginHigh) return true;
-            // 2. 低八度匹配 (user 是 target 的 0.5 倍)
-            if (ratio > (marginLow * 0.5) && ratio < (marginHigh * 0.5)) return true;
-            // 3. 高八度匹配 (user 是 target 的 2.0 倍)
-            if (ratio > (marginLow * 2.0) && ratio < (marginHigh * 2.0)) return true;
-
+            if (ratio > marginLow && ratio < marginHigh) return true; // 原调
+            if (ratio > (marginLow * 0.5) && ratio < (marginHigh * 0.5)) return true; // 低八度
+            if (ratio > (marginLow * 2.0) && ratio < (marginHigh * 2.0)) return true; // 高八度
             return false;
         }
 
-        /**
-         * AMDF (平均幅度差) 极速算法 - 抗噪增强版
-         */
+        // AMDF 音高检测 (抗噪版)
         function getPitchAMDF(buf, sampleRate) {
-            const SIZE = buf.length;
-            const MAX_SAMPLES = 1000; 
-            const MIN_FREQ = 60;
-            const MAX_FREQ = 800;
-            
-            const minPeriod = Math.floor(sampleRate / MAX_FREQ);
-            const maxPeriod = Math.floor(sampleRate / MIN_FREQ);
-            
-            let minVal = Infinity;
-            let bestPeriod = 0;
+            const SIZE = buf.length, MAX_SAMPLES = 1000; 
+            const minPeriod = Math.floor(sampleRate/800), maxPeriod = Math.floor(sampleRate/60);
+            let minVal = Infinity, bestPeriod = 0;
 
-            // 1. 静音检测 (RMS) - 阈值提高到 0.04 抗呼吸声
+            // 噪音门限：0.04 (避免呼吸声)
             let rms = 0;
             for (let i = 0; i < MAX_SAMPLES; i += 4) rms += buf[i] * buf[i];
             rms = Math.sqrt(rms / (MAX_SAMPLES / 4));
             if (rms < 0.04) return -1; 
 
-            // 2. AMDF 核心 (减法代替乘法，隔点采样)
+            // 核心计算
             for (let offset = minPeriod; offset < maxPeriod; offset += 2) {
                 let currentSum = 0;
-                for (let i = 0; i < 300; i += 2) {
-                    currentSum += Math.abs(buf[i] - buf[i + offset]);
-                }
-                if (currentSum < minVal) {
-                    minVal = currentSum;
-                    bestPeriod = offset;
-                }
+                for (let i = 0; i < 300; i += 2) currentSum += Math.abs(buf[i] - buf[i + offset]);
+                if (currentSum < minVal) { minVal = currentSum; bestPeriod = offset; }
             }
-
-            // 3. 清晰度校验 (防止风声被算作音高)
-            if (minVal < 120) { 
-                return sampleRate / bestPeriod;
-            }
-            return -1;
+            return (minVal < 120) ? sampleRate / bestPeriod : -1;
         }
-
     </script>
 </body>
 </html>
