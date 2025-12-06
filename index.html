@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Web K歌 - 最终完美版 (停止不重置)</title>
+    <title>Web K歌 - 专业防误触版（100分制）</title>
     <style>
         /* =========================================
-           1. 全局样式重置
+           1. 全局样式 & 动态背景
            ========================================= */
         * { 
             box-sizing: border-box; 
@@ -15,9 +15,10 @@
         }
         
         body { 
-            background: #111; 
-            color: #eee; 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            /* 深邃的紫蓝渐变背景 */
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #fff; 
+            font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
             height: 100dvh; 
             width: 100vw;
             margin: 0; 
@@ -27,63 +28,104 @@
             user-select: none; 
         }
 
+        body::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 60%);
+            animation: bgPulse 10s infinite alternate;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes bgPulse {
+            0% { transform: scale(1); opacity: 0.5; }
+            100% { transform: scale(1.1); opacity: 0.8; }
+        }
+
         /* =========================================
-           2. 顶部栏 (Header)
+           2. 顶部栏
            ========================================= */
         .top-bar {
             flex-shrink: 0; 
-            background: #1a1a1a;
-            width: 100%;
-            height: 50px; 
+            height: 60px; 
             display: flex;
             justify-content: space-between; 
             align-items: center;
-            padding: 0 15px;
-            border-bottom: 1px solid #333;
+            padding: 0 20px;
             z-index: 20;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            background: rgba(20, 20, 35, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
         }
 
+        .select-wrapper {
+            position: relative;
+            max-width: 60%;
+            flex: 1;
+        }
+        
         select {
-            background: #333;
+            background: rgba(255, 255, 255, 0.1);
             color: #fff;
-            border: 1px solid #555;
-            border-radius: 20px;
-            padding: 6px 25px 6px 15px;
-            font-size: 14px;
-            max-width: 65%; 
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            padding: 8px 35px 8px 15px;
+            font-size: 15px;
+            width: 100%;
             outline: none;
             appearance: none; 
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
-            background-repeat: no-repeat;
-            background-position: right 10px top 50%;
-            background-size: 8px auto;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        select option {
+            background-color: #1a1a1a;
+            color: #fff;
+        }
+        select:focus {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #00d2ff;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.3);
+        }
+        
+        .select-arrow {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            font-size: 10px;
+            color: #aaa;
         }
 
         .status-badge {
             font-size: 12px;
-            color: #00ffcc;
-            background: rgba(0, 255, 204, 0.1);
-            padding: 4px 10px;
-            border-radius: 10px;
-            border: 1px solid rgba(0, 255, 204, 0.2);
+            color: #00d2ff;
+            background: rgba(0, 210, 255, 0.1);
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 210, 255, 0.3);
             white-space: nowrap;
+            letter-spacing: 1px;
+            margin-left: 10px;
         }
 
         /* =========================================
-           3. 游戏画布区域
+           3. 画布 & 分数
            ========================================= */
         #canvas-wrapper {
             flex: 1; 
             position: relative;
             width: 100%;
-            background: #000;
+            background: transparent;
             overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
+            z-index: 10;
         }
 
         canvas {
@@ -96,37 +138,69 @@
 
         .score-board {
             position: absolute;
-            top: 15px;
-            right: 20px;
+            top: 20px;
+            right: 25px;
             text-align: right;
             pointer-events: none;
-            z-index: 10;
+            z-index: 15;
         }
+        
         .score-value { 
-            font-size: 48px; 
-            color: #00ffcc; 
-            font-weight: 800; 
-            font-family: 'Helvetica Neue', Arial, sans-serif; 
-            text-shadow: 0 0 15px rgba(0, 255, 204, 0.6);
-            transition: transform 0.1s;
+            font-size: 56px; 
+            color: #fff; 
+            font-weight: 900; 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            text-shadow: 0 0 10px #ff00de, 0 0 20px #ff00de;
+            line-height: 1;
         }
-        .score-label { font-size: 12px; color: #888; letter-spacing: 2px; text-transform: uppercase; }
+        .score-label { 
+            font-size: 12px; 
+            color: rgba(255,255,255,0.7); 
+            letter-spacing: 4px; 
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        /* 新增：连击提示 */
+        .combo-board {
+            position: absolute;
+            bottom: 20px;
+            left: 25px;
+            text-align: left;
+            pointer-events: none;
+            z-index: 15;
+        }
+        .combo-value {
+            font-size: 32px;
+            color: #ffd700;
+            font-weight: 900;
+            text-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700;
+            line-height: 1;
+        }
+        .combo-label {
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
 
         /* =========================================
-           4. 底部控制栏
+           4. 底部栏
            ========================================= */
         .bottom-controls {
             flex-shrink: 0; 
-            background: #1a1a1a;
             width: 100%;
-            padding: 12px 20px;
-            padding-bottom: max(12px, env(safe-area-inset-bottom));
+            padding: 15px 25px;
+            padding-bottom: max(15px, env(safe-area-inset-bottom));
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-top: 1px solid #333;
-            gap: 15px;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+            gap: 20px;
+            z-index: 20;
+            background: rgba(20, 20, 35, 0.75);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.4);
         }
 
         .vol-control {
@@ -134,77 +208,73 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: 6px;
-            background: #252525;
-            padding: 8px 15px;
-            height: 54px;
-            border-radius: 12px;
-            border: 1px solid #333;
+            gap: 8px;
         }
         
         .vol-header {
             display: flex;
             justify-content: space-between;
-            font-size: 11px;
-            color: #aaa;
-            width: 100%;
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+            padding: 0 2px;
         }
-        .vol-num { color: #00ffcc; font-weight: bold; font-family: monospace; }
+        .vol-num { color: #00d2ff; font-weight: bold; }
 
         input[type=range] {
             width: 100%;
-            height: 4px;
-            border-radius: 2px;
+            height: 6px;
+            border-radius: 3px;
             appearance: none;
-            background: #444;
+            background: rgba(255, 255, 255, 0.1);
             outline: none;
         }
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
-            background: #00ffcc;
+            background: #fff;
             cursor: pointer;
-            box-shadow: 0 0 5px rgba(0, 255, 204, 0.5);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+            border: 2px solid #00d2ff;
+            transform: translateY(-1px);
         }
 
         .btn-group {
             display: flex;
-            gap: 10px;
+            gap: 12px;
         }
 
         .btn {
-            height: 54px;
-            padding: 0 16px;
+            height: 50px;
+            padding: 0 24px;
             border: none;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: bold;
-            transition: transform 0.1s, filter 0.1s;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
             white-space: nowrap;
+            letter-spacing: 0.5px;
+            position: relative;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
-        .btn:active { transform: scale(0.95); filter: brightness(0.9); }
+        .btn:active { transform: scale(0.96); }
         .btn:disabled { 
-            background: #333 !important; 
-            color: #666 !important; 
-            box-shadow: none !important; 
-            transform: none !important;
+            background: #3a3a4c !important; 
+            color: #888 !important; 
+            box-shadow: none !important;
             cursor: not-allowed;
+            opacity: 0.7;
         }
 
         .btn-main {
-            min-width: 80px;
-            background: linear-gradient(135deg, #00ffcc, #0099ff);
-            color: #000;
-            box-shadow: 0 4px 15px rgba(0, 255, 204, 0.2);
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            box-shadow: 0 4px 20px rgba(0, 114, 255, 0.4);
         }
-
         .btn-stop {
-            min-width: 60px;
-            background: linear-gradient(135deg, #ff3366, #ff0033);
-            color: #fff;
-            box-shadow: 0 4px 15px rgba(255, 51, 102, 0.3);
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+            box-shadow: 0 4px 20px rgba(255, 75, 43, 0.4);
         }
 
         /* =========================================
@@ -213,7 +283,7 @@
         #rotate-hint {
             display: none;
             position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.92);
+            background: #0f0c29;
             z-index: 999;
             flex-direction: column;
             justify-content: center;
@@ -222,48 +292,56 @@
             text-align: center;
             padding: 20px;
         }
-        .rotate-icon { font-size: 50px; margin-bottom: 20px; animation: rotateAnim 2s infinite; }
-        .rotate-text { font-size: 18px; color: #ccc; }
-        
+        .rotate-icon { 
+            font-size: 60px; 
+            margin-bottom: 20px; 
+            animation: rotateAnim 2s infinite; 
+            filter: drop-shadow(0 0 10px #00d2ff);
+        }
         @keyframes rotateAnim {
             0% { transform: rotate(0deg); }
             25% { transform: rotate(-90deg); }
             100% { transform: rotate(-90deg); }
         }
-
         @media screen and (orientation: portrait) and (max-width: 600px) {
             #rotate-hint { display: flex; }
         }
-
-        #bgmAudio { display: none; }
     </style>
 </head>
 <body>
 
     <div id="rotate-hint">
         <div class="rotate-icon">📱</div>
-        <div class="rotate-text">请将手机<b>横屏</b>使用<br>获得最佳体验</div>
+        <div style="line-height: 1.6;">请将手机<b>横屏</b>使用<br><span style="color:#888; font-size:14px;">获得 KTV 级体验</span></div>
     </div>
 
     <div class="top-bar">
-        <select id="songSelect">
-            <option value="">正在初始化...</option>
-        </select>
+        <div class="select-wrapper">
+            <select id="songSelect">
+                <option value="">正在初始化...</option>
+            </select>
+            <div class="select-arrow">▼</div>
+        </div>
         <div id="statusText" class="status-badge">等待选择</div>
     </div>
 
     <div id="canvas-wrapper">
         <canvas id="gameCanvas"></canvas>
         <div class="score-board">
-            <div class="score-label">SCORE</div>
             <div class="score-value" id="scoreEl">0</div>
+            <div class="score-label">SCORE</div>
+        </div>
+        <!-- 新增：连击面板 -->
+        <div class="combo-board">
+            <div class="combo-value" id="comboEl">0</div>
+            <div class="combo-label">COMBO</div>
         </div>
     </div>
 
     <div class="bottom-controls">
         <div class="vol-control">
             <div class="vol-header">
-                <span>🎤 伴奏音量</span>
+                <span>🎵 伴奏音量</span>
                 <span class="vol-num" id="volText">70%</span>
             </div>
             <input type="range" id="volSlider" min="0" max="100" step="1" value="70">
@@ -275,11 +353,11 @@
         </div>
     </div>
 
-    <audio id="bgmAudio" crossorigin="anonymous"></audio>
+    <audio id="bgmAudio" crossorigin="anonymous">
 
     <script>
         // ==========================================
-        //  Web K歌核心引擎 - Stop (No Reset) Version
+        //  Web K歌核心引擎 - 100分制优化版
         // ==========================================
 
         let playlist = [];
@@ -288,9 +366,15 @@
         let dataArray;
         let isRunning = false;
         
+        // 评分核心变量（100分制优化）
         let score = 0;
-        let totalVocalFrames = 0; 
-        let hitVocalFrames = 0;   
+        let comboCount = 0;          // 连击数
+        let maxCombo = 0;            // 最大连击
+        let totalNoteCount = 0;      // 总音符数
+        let hitNoteCount = 0;        // 命中音符数
+        let perfectHitCount = 0;     // 完美命中数
+        let lastHitTime = 0;         // 最后命中时间（防衰减）
+        let volumeWeight = 1.0;      // 音量权重
         
         let frameCounter = 0;
         let renderIndex = 0;
@@ -303,13 +387,23 @@
         const stopBtn = document.getElementById('stopBtn'); 
         const statusText = document.getElementById('statusText');
         const scoreEl = document.getElementById('scoreEl');
+        const comboEl = document.getElementById('comboEl'); // 连击元素
         const volSlider = document.getElementById('volSlider');
         const volText = document.getElementById('volText');
         const bgmAudio = document.getElementById('bgmAudio');
 
         let canvasWidth, canvasHeight;
         const VIEW_DURATION = 4.0; 
-        const NOTE_HEIGHT = 12;    
+        const NOTE_HEIGHT = 14; 
+        // 评分常量（100分制核心配置）
+        const MAX_SCORE = 100;       // 满分100分
+        const NOTE_BASE_SCORE = 1.0; // 单个音符基础分（动态调整，确保总分≤100）
+        const COMBO_MULTIPLIER = 0.05; // 连击乘数（每连击+5%，最大1.5倍）
+        const VOLUME_THRESHOLD = 0.1; // 音量阈值（过滤呼吸声）
+        const SCORE_DECAY_RATE = 0.2; // 分数衰减率（每秒衰减2分）
+        const PERFECT_RANGE = 0.05;   // 完美音准范围（±5%）
+        const GREAT_RANGE = 0.10;     // 优秀音准范围（±10%）
+        const GOOD_RANGE = 0.15;      // 良好音准范围（±15%）
 
         window.onload = async () => {
             resizeCanvas();
@@ -318,16 +412,20 @@
             volSlider.oninput = () => {
                 const val = parseInt(volSlider.value);
                 volText.innerText = val + "%"; 
+                const percent = (val / 100) * 100;
+                volSlider.style.background = `linear-gradient(to right, #00d2ff 0%, #00d2ff ${percent}%, rgba(255,255,255,0.1) ${percent}%, rgba(255,255,255,0.1) 100%)`;
+
                 if(bgmGainNode) {
                     bgmGainNode.gain.value = val / 100;
                 }
             };
+            volSlider.oninput();
 
             try {
                 const res = await fetch('playlist.json?t=' + Date.now());
                 playlist = await res.json();
                 
-                songSelect.innerHTML = '<option value="" disabled selected>👉 点击选择歌曲</option>';
+                songSelect.innerHTML = '<option value="" disabled selected>👉 点击这里选择歌曲</option>';
                 playlist.forEach((song, index) => {
                     const opt = document.createElement('option');
                     opt.value = index;
@@ -364,7 +462,6 @@
             const song = playlist[index];
             if (!song) return;
 
-            // 加载新歌时，完全重置
             resetGameStates(); 
             
             statusText.innerText = "下载数据...";
@@ -375,10 +472,16 @@
                 bgmAudio.src = song.mp3;
                 const res = await fetch(song.json);
                 currentMelodyData = await res.json();
+                // 统计总音符数（仅有效音符）
+                totalNoteCount = currentMelodyData.filter(note => note.p > 0).length;
+                // 动态调整单个音符基础分（确保所有音符完美命中时总分=100）
+                const adjustedBaseScore = totalNoteCount > 0 ? MAX_SCORE / totalNoteCount : 1.0;
                 
                 statusText.innerText = "加载完毕";
                 startBtn.disabled = false;
                 startBtn.innerText = "▶ 开始演唱";
+                startBtn.classList.remove('btn-stop');
+                startBtn.classList.add('btn-main');
             } catch (e) {
                 console.error(e);
                 statusText.innerText = "数据错误";
@@ -386,16 +489,23 @@
             }
         }
 
-        // --- 完整状态重置 (用于换歌或重新开始) ---
         function resetGameStates() {
             isRunning = false;
             bgmAudio.pause();
             bgmAudio.currentTime = 0;
             renderIndex = 0;
+            // 重置评分变量
             score = 0;
-            totalVocalFrames = 0;
-            hitVocalFrames = 0;
-            scoreEl.innerText = '0';
+            comboCount = 0;
+            maxCombo = 0;
+            totalNoteCount = 0;
+            hitNoteCount = 0;
+            perfectHitCount = 0;
+            lastHitTime = 0;
+            volumeWeight = 1.0;
+            
+            scoreEl.innerText = '0'; 
+            comboEl.innerText = '0'; // 重置连击显示
             frameCounter = 0;
             lastUserFreq = -1;
         }
@@ -405,36 +515,49 @@
             startBtn.disabled = false;
             startBtn.innerText = "重新开始";
             stopBtn.disabled = true;
-            alert(`${reason}！\n最终得分: ${score}`);
+            statusText.innerText = "结算中";
+            
+            // 结算统计（100分制）
+            const accuracy = totalNoteCount > 0 ? (hitNoteCount / totalNoteCount) * 100 : 0;
+            const perfectRate = hitNoteCount > 0 ? (perfectHitCount / hitNoteCount) * 100 : 0;
+            const finalScore = Math.min(MAX_SCORE, Math.max(0, Math.floor(score)));
+            
+            alert(`${reason}！
+最终得分: ${finalScore} / ${MAX_SCORE}
+最大连击: ${maxCombo}
+准确率: ${accuracy.toFixed(1)}%
+完美率: ${perfectRate.toFixed(1)}%`);
         }
 
-        // --- 修改点：停止按钮逻辑 (不重置状态) ---
         stopBtn.onclick = () => {
             if (isRunning) {
-                // 1. 停止运行标志
                 isRunning = false;
-                // 2. 暂停音乐并归零 (下次开始是重新开始)
                 bgmAudio.pause();
                 bgmAudio.currentTime = 0;
                 
-                // 3. UI 状态更新
                 stopBtn.disabled = true;
                 startBtn.disabled = false;
                 startBtn.innerText = "重新开始";
                 statusText.innerText = "已停止";
                 
-                // 4. 注意：这里不调用 resetGameStates()，保留 score 显示
-                alert(`已停止演唱。\n最终得分: ${score}`);
+                // 结算统计（100分制）
+                const accuracy = totalNoteCount > 0 ? (hitNoteCount / totalNoteCount) * 100 : 0;
+                const perfectRate = hitNoteCount > 0 ? (perfectHitCount / hitNoteCount) * 100 : 0;
+                const finalScore = Math.min(MAX_SCORE, Math.max(0, Math.floor(score)));
+                
+                alert(`已停止演唱。
+最终得分: ${finalScore} / ${MAX_SCORE}
+最大连击: ${maxCombo}
+准确率: ${accuracy.toFixed(1)}%
+完美率: ${perfectRate.toFixed(1)}%`);
             }
         };
 
-        // --- 开始游戏 ---
         startBtn.onclick = async () => {
             startBtn.disabled = true;
-            startBtn.innerText = "正在启动...";
+            startBtn.innerText = "启动中...";
             stopBtn.disabled = true;
 
-            // --- 关键：每次点击开始，才是真正的重置时刻 ---
             resetGameStates();
 
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -481,7 +604,8 @@
                 await bgmAudio.play();
                 isRunning = true;
                 startBtn.innerText = "演唱中...";
-                stopBtn.disabled = false; // 启用停止按钮
+                stopBtn.disabled = false;
+                statusText.innerText = "🎤 演唱中";
                 
                 loop();
 
@@ -489,73 +613,108 @@
                 console.error(e);
                 startBtn.disabled = false;
                 startBtn.innerText = "启动失败";
-                statusText.innerText = "硬件占用中";
+                statusText.innerText = "设备忙";
             }
         };
 
-        // --- 主循环 ---
-        // ... (之前的代码保持不变，直到 loop 函数)
+        function loop() {
+            if (!isRunning) return;
+            requestAnimationFrame(loop);
 
-        // --- 主循环 ---
-        function loop() {
-            if (!isRunning) return;
-            requestAnimationFrame(loop);
+            frameCounter++;
+            const currentTime = bgmAudio.currentTime;
 
-            frameCounter++;
-            const currentTime = bgmAudio.currentTime;
+            let targetPitch = 0;
+            let currentNote = null;
+            for(let i = renderIndex; i < currentMelodyData.length; i++) {
+                const item = currentMelodyData[i];
+                if (Math.abs(item.t - currentTime) < 0.15) { 
+                    targetPitch = item.p;
+                    currentNote = item;
+                    break;
+                }
+                if (item.t > currentTime + 0.15) break; 
+            }
 
-            let targetPitch = 0;
-            for(let i = renderIndex; i < currentMelodyData.length; i++) {
-                const item = currentMelodyData[i];
-                if (Math.abs(item.t - currentTime) < 0.15) { 
-                    targetPitch = item.p;
-                    break;
-                }
-                if (item.t > currentTime + 0.15) break; 
-            }
+            let userFreq = lastUserFreq;
+            let userVolume = 0; // 用户音量
+            if (frameCounter % 3 === 0) {
+                analyser.getFloatTimeDomainData(dataArray);
+                // 计算音量（RMS）
+                userVolume = calculateRMS(dataArray);
+                // 核心优化1：提高音量门槛，防呼吸声
+                const detected = getPitchAMDF(dataArray, audioCtx.sampleRate);
+                
+                if (detected > 0 && userVolume > VOLUME_THRESHOLD) {
+                    userFreq = detected;
+                    lastUserFreq = detected;
+                } else {
+                    if (frameCounter % 10 === 0) lastUserFreq = -1; 
+                }
 
-            let userFreq = lastUserFreq;
-            if (frameCounter % 3 === 0) {
-                analyser.getFloatTimeDomainData(dataArray);
-                const detected = getPitchAMDF(dataArray, audioCtx.sampleRate);
-                
-                if (detected > 0) {
-                    userFreq = detected;
-                    lastUserFreq = detected;
-                } else {
-                    if (frameCounter % 10 === 0) lastUserFreq = -1; 
-                }
+                // 计算音量权重（0.8-1.2倍，避免权重过大影响满分）
+                volumeWeight = Math.max(0.8, Math.min(1.2, userVolume / VOLUME_THRESHOLD));
+                
+                // 100分制评分逻辑（核心优化）
+                if (targetPitch > 0 && totalNoteCount > 0) {
+                    // 动态计算单个音符基础分（确保总分不超过100）
+                    const noteBase = MAX_SCORE / totalNoteCount;
+                    const pitchAccuracy = calculatePitchAccuracy(userFreq, targetPitch);
+                    let hitScore = 0;
+                    
+                    // 分档评分（按音准精度）
+                    if (pitchAccuracy >= (1 - PERFECT_RANGE) && userVolume > VOLUME_THRESHOLD) {
+                        // 完美命中：基础分×1.2×音量权重
+                        hitScore = noteBase * 1.2 * volumeWeight;
+                        perfectHitCount++;
+                        comboCount++;
+                        lastHitTime = currentTime;
+                        hitNoteCount++;
+                    } else if (pitchAccuracy >= (1 - GREAT_RANGE) && userVolume > VOLUME_THRESHOLD) {
+                        // 优秀命中：基础分×1.0×音量权重
+                        hitScore = noteBase * 1.0 * volumeWeight;
+                        comboCount++;
+                        lastHitTime = currentTime;
+                        hitNoteCount++;
+                    } else if (pitchAccuracy >= (1 - GOOD_RANGE) && userVolume > VOLUME_THRESHOLD) {
+                        // 良好命中：基础分×0.7×音量权重
+                        hitScore = noteBase * 0.7 * volumeWeight;
+                        comboCount++;
+                        lastHitTime = currentTime;
+                        hitNoteCount++;
+                    } else {
+                        // 未命中：重置连击+分数衰减
+                        comboCount = 0;
+                        const decayTime = currentTime - lastHitTime;
+                        if (decayTime > 0.3) {
+                            score = Math.max(0, score - SCORE_DECAY_RATE * decayTime);
+                        }
+                    }
+                    
+                    // 连击奖励（最大1.5倍，避免总分超100）
+                    const comboMultiplier = 1 + Math.min(0.5, comboCount * COMBO_MULTIPLIER);
+                    score += hitScore * comboMultiplier;
+                    
+                    // 限制分数上限（不超过100）
+                    score = Math.min(MAX_SCORE, score);
+                    
+                    // 更新最大连击
+                    maxCombo = Math.max(maxCombo, comboCount);
+                } else {
+                    // 无目标音符时，分数缓慢衰减
+                    score = Math.max(0, score - SCORE_DECAY_RATE * 0.1);
+                    comboCount = 0;
+                }
+                
+                // 更新UI显示（整数分数）
+                scoreEl.innerText = Math.floor(score);
+                comboEl.innerText = comboCount;
+            }
+            
+            ctx.fillStyle = 'rgba(20, 20, 35, 0.4)'; 
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight); 
 
-                if (targetPitch > 0) {
-                    totalVocalFrames++; 
-                    if (userFreq > 0 && checkPitchHit(userFreq, targetPitch)) {
-                        hitVocalFrames++;
-                    }
-                    
-                    if (totalVocalFrames > 0) {
-                        // 原始分数计算: 命中帧数 / 总人声帧数 * 100
-                        let rawScore = (hitVocalFrames / totalVocalFrames) * 100;
-                        
-                        // *** 评分机制优化 ***
-                        // 目标是让最低分显示 80 分。我们可以将 0-100 的原始分数映射到 80-100 的范围。
-                        // 新分数 = 80 + (原始分数 * 0.2)
-                        score = Math.floor(80 + (rawScore * 0.2)); 
-                        
-                        // 确保最终分数不会超过 100
-                        score = Math.min(100, score); 
-                        
-                        // 实时显示当前分数
-                        scoreEl.innerText = score;
-                    }
-                }
-            }
-
-        // ... (之后的代码保持不变)
-
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-
-            ctx.strokeStyle = '#222';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
             ctx.lineWidth = 1;
             ctx.beginPath();
             [130.81, 261.63, 523.25].forEach(freq => {
@@ -565,7 +724,7 @@
             ctx.stroke();
 
             const playerX = canvasWidth * 0.25;
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
             ctx.lineWidth = 2;
             ctx.beginPath(); ctx.moveTo(playerX, 0); ctx.lineTo(playerX, canvasHeight); ctx.stroke();
 
@@ -578,34 +737,96 @@
                 const drawX = playerX + (note.t - currentTime) / VIEW_DURATION * canvasWidth;
                 if (note.p <= 0 || drawX < -30) continue; 
                 const y = freqToY(note.p);
-                let color = '#00eebb'; 
-                if (Math.abs(drawX - playerX) < 15) { 
-                     if (userFreq > 0 && targetPitch > 0 && checkPitchHit(userFreq, targetPitch)) {
-                         color = '#ffffff'; 
-                     }
+                
+                // 根据音准精度显示不同颜色
+                let color = '#00d2ff'; 
+                let shadowBlur = 0;
+                
+                if (Math.abs(drawX - playerX) < 15 && targetPitch > 0) { 
+                    const accuracy = calculatePitchAccuracy(userFreq, targetPitch);
+                    if (userFreq > 0 && userVolume > VOLUME_THRESHOLD) {
+                        if (accuracy >= (1 - PERFECT_RANGE)) {
+                            // 完美：白色高亮
+                            color = '#ffffff';
+                            shadowBlur = 15;
+                        } else if (accuracy >= (1 - GREAT_RANGE)) {
+                            // 优秀：绿色
+                            color = '#00ff9d';
+                            shadowBlur = 10;
+                        } else if (accuracy >= (1 - GOOD_RANGE)) {
+                            // 良好：金色
+                            color = '#ffd700';
+                            shadowBlur = 8;
+                        } else {
+                            // 偏差：橙色
+                            color = '#ff8800';
+                            shadowBlur = 5;
+                        }
+                    }
                 }
+                
                 ctx.fillStyle = color;
-                drawRoundRect(ctx, drawX, y - NOTE_HEIGHT/2, 14, NOTE_HEIGHT, 5);
+                ctx.shadowBlur = shadowBlur;
+                ctx.shadowColor = color;
+                drawRoundRect(ctx, drawX, y - NOTE_HEIGHT/2, 14, NOTE_HEIGHT, 6); 
+                ctx.shadowBlur = 0; 
             }
 
-            if (userFreq > 0) {
+            if (userFreq > 0 && userVolume > VOLUME_THRESHOLD) {
                 const userY = freqToY(userFreq);
                 ctx.beginPath();
-                ctx.arc(playerX, userY, 10, 0, Math.PI * 2);
-                if (targetPitch > 0 && checkPitchHit(userFreq, targetPitch)) {
-                    ctx.fillStyle = '#ffffff';
-                    ctx.shadowBlur = 15;
-                    ctx.shadowColor = '#00ffcc';
-                } else {
-                    ctx.fillStyle = '#ff3366'; 
-                    ctx.shadowBlur = 0;
+                ctx.arc(playerX, userY, 12, 0, Math.PI * 2); 
+                
+                // 根据音准显示不同颜色
+                let fillColor = '#ff00de';
+                let shadowColor = '#ff00de';
+                let shadowBlur = 10;
+                
+                if (targetPitch > 0) {
+                    const accuracy = calculatePitchAccuracy(userFreq, targetPitch);
+                    if (accuracy >= (1 - PERFECT_RANGE)) {
+                        fillColor = '#ffffff';
+                        shadowColor = '#00d2ff';
+                        shadowBlur = 20;
+                    } else if (accuracy >= (1 - GREAT_RANGE)) {
+                        fillColor = '#00ff9d';
+                        shadowColor = '#00ff9d';
+                        shadowBlur = 18;
+                    } else if (accuracy >= (1 - GOOD_RANGE)) {
+                        fillColor = '#ffd700';
+                        shadowColor = '#ffd700';
+                        shadowBlur = 15;
+                    }
                 }
+                
+                ctx.fillStyle = fillColor;
+                ctx.shadowBlur = shadowBlur;
+                ctx.shadowColor = shadowColor;
                 ctx.fill();
                 ctx.shadowBlur = 0;
             }
         }
 
-        // 辅助函数
+        // 计算音量（RMS均方根）
+        function calculateRMS(buffer) {
+            let sum = 0;
+            const sampleCount = Math.min(1000, buffer.length);
+            for (let i = 0; i < sampleCount; i += 4) {
+                sum += buffer[i] * buffer[i];
+            }
+            return Math.sqrt(sum / (sampleCount / 4));
+        }
+
+        // 计算音准精度（0-1，越接近1越准）
+        function calculatePitchAccuracy(userFreq, targetFreq) {
+            if (!userFreq || !targetFreq) return 0;
+            const ratio = userFreq / targetFreq;
+            // 处理倍频（高八度/低八度）
+            const normalizedRatio = ratio > 2 ? ratio / 2 : ratio < 0.5 ? ratio * 2 : ratio;
+            // 计算精度（1 - 误差值）
+            return 1 - Math.abs(1 - normalizedRatio);
+        }
+
         function drawRoundRect(ctx, x, y, width, height, radius) {
             ctx.beginPath();
             ctx.moveTo(x + radius, y);
@@ -646,13 +867,16 @@
             let rms = 0;
             for (let i = 0; i < MAX_SAMPLES; i += 4) rms += buf[i] * buf[i];
             rms = Math.sqrt(rms / (MAX_SAMPLES / 4));
-            if (rms < 0.04) return -1; 
+            
+            // 过滤低音量噪音（防呼吸声）
+            if (rms < 0.1) return -1; 
+            
             for (let offset = minPeriod; offset < maxPeriod; offset += 2) {
                 let currentSum = 0;
                 for (let i = 0; i < 300; i += 2) currentSum += Math.abs(buf[i] - buf[i + offset]);
                 if (currentSum < minVal) { minVal = currentSum; bestPeriod = offset; }
             }
-            return (minVal < 120) ? sampleRate / bestPeriod : -1;
+            return (minVal < 100) ? sampleRate / bestPeriod : -1;
         }
     </script>
 </body>
